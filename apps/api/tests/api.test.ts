@@ -18,7 +18,7 @@ const reader: MetadataReader = async (path) => {
   const base = path.split(/[\\/]/).pop()!.replace(/\.\w+$/, '')
   if (base.includes('broken')) throw new Error('Cannot decode file')
   const [artist = '', title = base] = base.includes(' - ') ? base.split(' - ') : ['', base]
-  return { title, artist, album: artist ? `${artist} Album` : '', albumArtist: artist, trackNo: 1, discNo: null, year: 2020, durationMs: 180000, format: 'mp3', bitrate: 320, picture: null }
+  return { title, artist, album: artist ? `${artist} Album` : '', albumArtist: artist, trackNo: 1, discNo: null, year: 2020, durationMs: 180000, format: 'mp3', bitrate: 320, picture: null, replayGainDb: null }
 }
 
 const call = (path: string, init: RequestInit = {}, token: string | null = TOKEN) =>
