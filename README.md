@@ -59,6 +59,22 @@ lives in the **system tray** next to the clock: click the tray icon to bring it 
 
 <img src="docs/screenshots/mini.png" alt="Mini player" width="400"> <img src="docs/screenshots/fa-mini.png" alt="Mini player (Persian)" width="400">
 
+### Built for podcasts, audiobooks and big libraries
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/player-speed-menu.png" alt="Speed, sleep timer, skip buttons"><br><sub>Remembers where you stopped in long tracks (≥ 10 min), −15 s / +30 s buttons, speed 0.75×–2×, sleep timer</sub></td>
+    <td width="50%"><img src="docs/screenshots/lyrics.png" alt="Synced lyrics"><br><sub>Synced lyrics from a <code>.lrc</code> file next to the song (or embedded tags)</sub></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/settings-sound.png" alt="Sound settings"><br><sub>Even out volume, gapless, crossfade and a 10-band equalizer</sub></td>
+    <td><img src="docs/screenshots/duplicates.png" alt="Duplicates"><br><sub>Duplicate finder: identical files and "same song, different files"</sub></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/edit-info.png" alt="Edit info"><br><sub>Fix a title/artist/album inside Mohhey; the audio file is never modified</sub></td>
+    <td></td>
+  </tr>
+</table>
+
 ### Small touches
 <table>
   <tr>
@@ -70,6 +86,24 @@ lives in the **system tray** next to the clock: click the tray icon to bring it 
 <img src="docs/screenshots/app-icon.png" alt="App icon" width="96"> The logo is the "M." mark; source `apps/desktop/resources/icon.svg` (regenerate PNG/ICO with `bun scripts/make-icons.mjs`).
 
 <sub>Screenshots use a small fictional library generated for the demo.</sub>
+
+## Features at a glance
+- **Resume** long tracks where you stopped; **speed** 0.75×–2× (pitch-preserving); **±15 s / 30 s** jump (`Shift+←/→`); **sleep timer** (15/30/45/60 min or end of track) with a slow fade-out.
+- **Even out volume**: ReplayGain tags when present, otherwise a gain learned from the first seconds of each track (quiet podcasts vs loud songs).
+- **Equalizer** (10 bands, presets), **gapless** preloading and real **crossfade** (two decks, equal-power overlap).
+- **Lyrics** (`.lrc` sidecar or embedded), **Edit info** (kept inside Mohhey, never written to your files; restorable), **duplicate finder**.
+- **Garbled tags are repaired automatically** (UTF-8 text that was stored as Windows-1252, e.g. Persian "Ø®ÙØ§ØµÙ…" → "خلاصه…"), and the library rescans at start-up.
+- Skipping fades smoothly; mini player lives in the tray; media keys / OS overlay via MediaSession (not verified on hardware).
+
+## Build the installer (Windows)
+```bash
+cd apps/desktop
+bun run dist          # → apps/desktop/dist/Mohhey-Player-Setup-<version>.exe
+bun run dist:dir      # unpacked app only (faster, for testing)
+```
+`dist` compiles the API into a self-contained executable (`scripts/build-api.mjs`), builds the renderer, and packages everything with
+electron-builder (NSIS: choose the folder, Start-menu and desktop shortcuts; your library data is kept on uninstall). The installer is
+unsigned, so Windows SmartScreen will warn until it is code-signed. No auto-update is configured on purpose.
 
 ## Smooth transitions
 Skipping to the next/previous track (or picking another one) fades the current sound out (~0.2 s) and the new one in (~0.4 s) instead of cutting it off;
@@ -108,7 +142,7 @@ Settings → "Clear & rebuild" regenerates the artwork cache.
 `docs/architecture.md`, `docs/design-system.md`, `docs/decisions/`.
 
 ## Known limitations
-- No installer yet: packaging needs `bun build --compile` for the API plus electron-builder (see ADR 0002).
-- Media keys and OS "now playing" use Chromium's MediaSession. Implemented, but not verified on real hardware.
-- Equalizer, crossfade, gapless, lyrics and tag editing are deliberately deferred until the core is stable.
+- The installer is unsigned (SmartScreen warning) and has no auto-update; macOS/Linux packaging is configured but untested.
+- Media keys and the OS "now playing" overlay use Chromium's MediaSession (state, position, seek and metadata are verified in-app); pressing physical keys is not verified on hardware.
+- Gapless uses preloading of HTMLAudioElement: gaps are tiny but not guaranteed sample-accurate.
 - Only English and Persian are translated; API error messages (e.g. validation) are still English.
