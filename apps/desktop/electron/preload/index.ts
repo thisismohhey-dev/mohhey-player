@@ -6,6 +6,7 @@ const bridge: DesktopBridge = {
   getApiConfig: () => ipcRenderer.invoke('api:get-config'),
   pickFolder: () => ipcRenderer.invoke('dialog:pick-folder'),
   setTitleBarTheme: (dark) => ipcRenderer.send('window:set-theme', dark === true),
+  setMiniMode: (on) => ipcRenderer.send('window:set-mini', on === true),
   platform: process.platform as DesktopBridge['platform'],
 }
 
