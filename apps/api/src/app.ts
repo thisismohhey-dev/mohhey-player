@@ -2,6 +2,8 @@ import { Elysia } from 'elysia'
 import { timingSafeEqual } from 'node:crypto'
 import type { ApiError } from '@mohhey/contracts'
 import { browseRoutes } from './modules/library/browse'
+import { duplicatesRoutes } from './modules/library/duplicates'
+import { lyricsRoutes } from './modules/lyrics/routes'
 import { libraryRoutes } from './modules/library/routes'
 import { LibraryScanner, type MetadataReader } from './modules/library/scanner'
 import { artworkRoutes } from './modules/artwork/module'
@@ -71,7 +73,9 @@ export function createApp({ config, db, metadataReader }: AppDeps) {
     })
     .get('/health', () => ({ ok: true }))
     .use(libraryRoutes(db, scanner))
-    .use(tracksRoutes(tracks))
+    .use(tracksRoutes(tracks, db))
+    .use(lyricsRoutes(tracks))
+    .use(duplicatesRoutes(db, tracks))
     .use(browseRoutes(db, tracks))
     .use(playlistsRoutes(new PlaylistsRepo(db, tracks)))
     .use(searchRoutes(tracks))
