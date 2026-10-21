@@ -8,6 +8,7 @@ interface TrackRow {
   track_no: number | null; disc_no: number | null; year: number | null; duration_ms: number; format: string
   bitrate: number | null; file_name: string; artwork_hash: string | null; favorite: number; play_count: number
   last_played_at: number | null; missing: number
+  resume_ms: number; gain_db: number | null; meta_locked: number
 }
 
 interface AggRow { id: number; title: string; artist: string | null; year: number | null; n: number; dur: number; art: string | null }
@@ -15,7 +16,8 @@ interface ArtistRow { id: number; name: string; n: number; albums: number; art: 
 
 const TRACK_SELECT = `
   SELECT t.id, t.title, t.artist_id, ar.name AS artist, t.album_id, al.title AS album, t.track_no, t.disc_no, t.year,
-         t.duration_ms, t.format, t.bitrate, t.file_name, t.artwork_hash, t.favorite, t.play_count, t.last_played_at, t.missing
+         t.duration_ms, t.format, t.bitrate, t.file_name, t.artwork_hash, t.favorite, t.play_count, t.last_played_at, t.missing,
+         t.resume_ms, t.gain_db, t.meta_locked
   FROM tracks t
   LEFT JOIN artists ar ON ar.id = t.artist_id
   LEFT JOIN albums al ON al.id = t.album_id`
@@ -25,6 +27,7 @@ export const mapTrack = (r: TrackRow): Track => ({
   trackNo: r.track_no, discNo: r.disc_no, year: r.year, durationMs: r.duration_ms, format: r.format, bitrate: r.bitrate,
   fileName: r.file_name, artworkHash: r.artwork_hash, favorite: r.favorite === 1, playCount: r.play_count,
   lastPlayedAt: r.last_played_at, missing: r.missing === 1,
+  resumeMs: r.resume_ms, gainDb: r.gain_db, edited: r.meta_locked === 1,
 })
 
 const mapAlbum = (r: AggRow): Album => ({
@@ -107,6 +110,14 @@ export class TracksRepo {
       if (ok && record) this.db.query('INSERT INTO play_history (track_id, played_at) VALUES (?, ?)').run(id, now)
       return ok
     })()
+  }
+
+  setResume(id: number, positionMs: number): boolean {
+    return this.db.query('UPDATE tracks SET resume_ms = ? WHERE id = ?').run(positionMs, id).changes > 0
+  }
+
+  setGain(id: number, gainDb: number): boolean {
+    return this.db.query('UPDATE tracks SET gain_db = ? WHERE id = ?').run(gainDb, id).changes > 0
   }
 
   markMissing(id: number): void {
