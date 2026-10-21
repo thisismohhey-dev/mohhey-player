@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { nf, t } from '@/lib/i18n'
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ChevronRight, Folder, FolderOpen, FolderTree } from 'lucide-vue-next'
@@ -38,11 +39,11 @@ const crumbs = computed(() => {
 
 <template>
   <header class="px-8 pb-4 pt-6">
-    <h1 class="text-[clamp(2.5rem,5vw,4.5rem)] font-medium leading-none">Folders</h1>
-    <nav v-if="crumbs.length" class="mt-4 flex flex-wrap items-center gap-1 text-[14px]" aria-label="Breadcrumb">
-      <button class="rounded-full px-2 py-1 text-muted-foreground hover:bg-foreground/[0.06] hover:text-foreground" @click="go('')">All folders</button>
+    <h1 class="text-[clamp(2.5rem,5vw,4.5rem)] font-medium leading-none">{{ t('Folders') }}</h1>
+    <nav v-if="crumbs.length" class="mt-4 flex flex-wrap items-center gap-1 text-[14px]" :aria-label="t('Breadcrumb')">
+      <button class="rounded-full px-2 py-1 text-muted-foreground hover:bg-foreground/[0.06] hover:text-foreground" @click="go('')">{{ t('All folders') }}</button>
       <template v-for="(c, i) in crumbs" :key="c.path">
-        <ChevronRight class="size-4 text-muted-foreground/60" aria-hidden="true" />
+        <ChevronRight class="size-4 text-muted-foreground/60 rtl:rotate-180" aria-hidden="true" />
         <button
           dir="auto" class="max-w-[16rem] truncate rounded-full px-2 py-1 hover:bg-foreground/[0.06]"
           :class="i === crumbs.length - 1 ? 'font-medium' : 'text-muted-foreground hover:text-foreground'"
@@ -50,15 +51,15 @@ const crumbs = computed(() => {
         >{{ c.name }}</button>
       </template>
     </nav>
-    <p v-else class="mt-3 text-[15px] text-muted-foreground">Browse your music the way it’s organised on disk.</p>
+    <p v-else class="mt-3 text-[15px] text-muted-foreground">{{ t('Browse your music the way it’s organised on disk.') }}</p>
   </header>
 
   <ErrorState v-if="error" :message="error" @retry="reload" />
-  <div v-else-if="loading && !data" class="px-8 text-muted-foreground" role="status">Loading…</div>
+  <div v-else-if="loading && !data" class="px-8 text-muted-foreground" role="status">{{ t('Loading…') }}</div>
   <template v-else-if="data">
-    <EmptyState v-if="!data.folders.length && !data.tracks.length" :icon="FolderTree" title="This folder is empty" body="No songs were found here. Try rescanning from Settings." />
+    <EmptyState v-if="!data.folders.length && !data.tracks.length" :icon="FolderTree" :title="t('This folder is empty')" :body="t('No songs were found here. Try rescanning from Settings.')" />
 
-    <ul v-if="data.folders.length" class="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-2 px-6" aria-label="Folders">
+    <ul v-if="data.folders.length" class="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-2 px-6" :aria-label="t('Folders')">
       <li v-for="f in data.folders" :key="f.path">
         <button
           class="group flex w-full items-center gap-3 rounded-2xl bg-card px-4 py-3 text-start shadow-card transition-colors hover:bg-foreground/[0.04]"
@@ -71,14 +72,14 @@ const crumbs = computed(() => {
             <span dir="auto" class="block truncate text-[15px] font-medium">{{ f.name }}</span>
             <span class="block text-[13px] text-muted-foreground">{{ plural(f.trackCount, 'song') }}</span>
           </span>
-          <ChevronRight class="size-4 text-muted-foreground" aria-hidden="true" />
+          <ChevronRight class="size-4 text-muted-foreground rtl:rotate-180" aria-hidden="true" />
         </button>
       </li>
     </ul>
 
-    <section v-if="data.tracks.length" class="mt-6" aria-label="Songs in this folder">
+    <section v-if="data.tracks.length" class="mt-6" :aria-label="t('Songs in this folder')">
       <div class="flex items-center justify-between px-8 pb-2">
-        <h2 class="text-[22px] font-medium">Songs <span class="text-base text-muted-foreground">· {{ data.tracks.length }}</span></h2>
+        <h2 class="text-[22px] font-medium">{{ t('Songs') }} <span class="text-base text-muted-foreground">· {{ nf(data.tracks.length) }}</span></h2>
         <div class="flex items-center gap-3"><PlayActions :load="source.all" /></div>
       </div>
       <div class="px-4"><TrackList :source="source" numbered /></div>
