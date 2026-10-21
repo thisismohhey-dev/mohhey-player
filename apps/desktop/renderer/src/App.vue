@@ -8,6 +8,7 @@ import NowPlaying from '@/components/NowPlaying.vue'
 import Onboarding from '@/components/Onboarding.vue'
 import PlayerBar from '@/components/PlayerBar.vue'
 import PlaylistDialog from '@/components/PlaylistDialog.vue'
+import TrackEditDialog from '@/components/TrackEditDialog.vue'
 import QueuePanel from '@/components/QueuePanel.vue'
 import Sidebar from '@/components/Sidebar.vue'
 import Toasts from '@/components/Toasts.vue'
@@ -35,6 +36,8 @@ async function boot(): Promise<void> {
     ui.setTheme(settings.theme)
     player.setRecordHistory(settings.recordHistory)
     await Promise.all([library.load(), player.init()])
+    // Pick up files added or changed since the last run (unchanged files are skipped, so this is quick).
+    if (library.hasLibrary && !library.isScanning) void library.rescan()
   } catch (e) {
     fatal.value = e instanceof Error ? e.message : 'The library service is not available.'
   }
@@ -45,6 +48,8 @@ function onKey(e: KeyboardEvent): void {
   if (el && (['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName) || el.isContentEditable)) return
   const mod = e.ctrlKey || e.metaKey
   if (e.code === 'Space' && !(el?.tagName === 'BUTTON')) { e.preventDefault(); void player.togglePlay() }
+  else if (e.shiftKey && !mod && e.key === 'ArrowRight') { e.preventDefault(); player.skipBy(30000) }
+  else if (e.shiftKey && !mod && e.key === 'ArrowLeft') { e.preventDefault(); player.skipBy(-15000) }
   else if (mod && e.key === 'ArrowRight') { e.preventDefault(); player.next() }
   else if (mod && e.key === 'ArrowLeft') { e.preventDefault(); player.previous() }
   else if (mod && e.key === 'ArrowUp') { e.preventDefault(); player.setVolume(player.volume + 0.05) }
@@ -93,6 +98,7 @@ onBeforeUnmount(() => { offs.forEach((off) => off()); window.removeEventListener
     </div>
     </template>
     <PlaylistDialog />
+    <TrackEditDialog />
     <Toasts />
   </TooltipProvider>
 </template>
