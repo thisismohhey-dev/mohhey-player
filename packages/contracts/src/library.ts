@@ -93,3 +93,18 @@ export const SearchResultSchema = z.object({
 export type SearchResult = z.infer<typeof SearchResultSchema>
 
 export const AddFolderBodySchema = z.object({ path: z.string().min(1).max(1024) })
+
+export const BrowseFolderSchema = z.object({
+  name: z.string(),
+  path: z.string(),
+  trackCount: z.number().int(),
+})
+export const BrowseResultSchema = z.object({
+  /** Current directory; empty string means the list of library roots. */
+  path: z.string(),
+  /** Directory to go "up" to; null at the roots list. */
+  parent: z.string().nullable(),
+  folders: z.array(BrowseFolderSchema),
+  tracks: z.array(TrackSchema),
+})
+export type BrowseResult = z.infer<typeof BrowseResultSchema>
