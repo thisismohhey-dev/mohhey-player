@@ -77,6 +77,16 @@ export class PlayQueue {
     }
   }
 
+  /** The entry that `next(auto)` would play, without moving. Does not look past the end when the loop would reshuffle. */
+  peek(auto = true): QueueEntry | null {
+    const cur = this.current
+    if (!cur) return null
+    if (auto && this.repeat === 'one') return null
+    const nextEntry = this.order[this.pos + 1]
+    if (nextEntry) return nextEntry
+    return this.repeat === 'all' && !this.shuffle ? (this.order[0] ?? null) : null
+  }
+
   /** `auto` is true when a track ended naturally (repeat-one replays), false for the user pressing next. */
   next(auto: boolean): Advance {
     const cur = this.current
