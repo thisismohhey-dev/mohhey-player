@@ -23,6 +23,17 @@ Offline desktop music player. **Electron · Vue 3 · shadcn-vue + Tailwind · El
   </tr>
 </table>
 
+### Liquid-glass player bar
+The player bar is frosted glass (backdrop blur + saturation, rim light) tinted with colours sampled from the current cover, over a
+soft brand-coloured gradient background. Works in light and dark.
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/glass-light.png" alt="Glass player bar, light"></td>
+    <td width="50%"><img src="docs/screenshots/glass-dark.png" alt="Glass player bar, dark"></td>
+  </tr>
+</table>
+
 ### Persian / right-to-left
 Switch the language in **Settings → Language**. The whole UI flips to RTL (sidebar, queue panel, lists, breadcrumbs) and uses
 [Vazirmatn](https://github.com/rastikerdar/vazirmatn) (SIL OFL) with Persian digits and the Jalali date. Playback controls and the
