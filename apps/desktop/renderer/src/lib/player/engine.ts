@@ -19,6 +19,10 @@ export class AudioEngine {
   private audio: HTMLAudioElement
   private pendingStartMs = 0
   private autoplay = false
+  /** User volume (0..1) and a transient fade gain (0..1); the element volume is their product. */
+  private userVolume = 1
+  private gain = 1
+  private fadeId = 0
 
   constructor(private events: EngineEvents, audio: HTMLAudioElement = new Audio()) {
     this.audio = audio
@@ -73,7 +77,38 @@ export class AudioEngine {
     this.audio.currentTime = Math.max(0, Math.min(ms / 1000, max))
   }
   restart(): void { this.audio.currentTime = 0; void this.play() }
-  setVolume(v: number): void { this.audio.volume = Math.max(0, Math.min(1, v)) }
+  setVolume(v: number): void { this.userVolume = Math.max(0, Math.min(1, v)); this.applyVolume() }
+  private applyVolume(): void {
+    // Squaring the gain gives a more natural-sounding ramp than a linear one.
+    this.audio.volume = this.userVolume * this.gain * this.gain
+  }
+
+  /** Jumps the fade gain immediately (cancels a running fade). */
+  setGain(g: number): void { this.fadeId++; this.gain = Math.max(0, Math.min(1, g)); this.applyVolume() }
+
+  /**
+   * Ramps the fade gain to `target` over `ms`. A newer fade (or setGain) cancels this one; the promise
+   * resolves either way, with `true` only when this fade ran to completion.
+   */
+  fade(target: number, ms: number): Promise<boolean> {
+    const id = ++this.fadeId
+    const from = this.gain
+    const start = performance.now()
+    return new Promise((resolve) => {
+      const step = (now: number): void => {
+        if (id !== this.fadeId) return resolve(false)
+        const p = ms <= 0 ? 1 : Math.min(1, (now - start) / ms)
+        this.gain = from + (target - from) * p
+        this.applyVolume()
+        if (p < 1) setTimeout(() => step(performance.now()), 16)
+        else resolve(true)
+      }
+      // setTimeout rather than requestAnimationFrame: rAF stops entirely while the window is minimised or hidden.
+      setTimeout(() => step(performance.now()), 0)
+    })
+  }
+  /** True while sound is actually being produced. */
+  get isAudible(): boolean { return !this.audio.paused && !this.audio.ended && this.hasSource }
   setMuted(m: boolean): void { this.audio.muted = m }
   get isPaused(): boolean { return this.audio.paused }
   get hasSource(): boolean { return !!this.audio.getAttribute('src') }
