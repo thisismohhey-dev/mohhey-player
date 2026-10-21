@@ -40,10 +40,11 @@ export const useLibraryStore = defineStore('library', () => {
   async function refreshPlaylists(): Promise<void> { playlists.value = await api.playlists.list() }
 
   async function addFolder(): Promise<void> {
-    const path = await window.mohhey.pickFolder()
-    if (!path) return
+    const result = await window.mohhey.addLibraryFolder()
+    if (result.status === 'cancelled') return
+    if (result.status === 'error') { ui.toast(t(result.message), 'error'); return }
     try {
-      folders.value = await api.library.addFolder(path)
+      folders.value = await api.library.folders()
       scan.value = await api.library.scanStatus()
       poll()
     } catch (e) {

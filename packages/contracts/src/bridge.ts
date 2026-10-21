@@ -7,8 +7,11 @@ export interface TrayLabels { show: string; playPause: string; next: string; pre
 export interface DesktopBridge {
   /** Connection info for the local API. The token is generated per launch and never persisted. */
   getApiConfig(): Promise<{ baseUrl: string; token: string }>
-  /** Opens the native folder dialog. Resolves to null when cancelled. */
-  pickFolder(): Promise<string | null>
+  /**
+   * Opens the native folder dialog and, if the user picks a folder, adds it to the library. The path never passes through
+   * page code: the main process talks to the library service itself.
+   */
+  addLibraryFolder(): Promise<{ status: 'added' } | { status: 'cancelled' } | { status: 'error'; message: string }>
   /** Custom title-bar buttons (Windows/Linux; macOS keeps its native traffic lights). */
   windowControl(action: WindowControl): void
   onMaximizeChange(cb: (maximized: boolean) => void): () => void

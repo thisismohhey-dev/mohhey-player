@@ -11,7 +11,7 @@ const listen = <T>(channel: string, cb: (value: T) => void): (() => void) => {
 // Only these named members are reachable from the page; ipcRenderer itself is never exposed.
 const bridge: DesktopBridge = {
   getApiConfig: () => ipcRenderer.invoke('api:get-config'),
-  pickFolder: () => ipcRenderer.invoke('dialog:pick-folder'),
+  addLibraryFolder: () => ipcRenderer.invoke('library:add-folder'),
   windowControl: (action) => ipcRenderer.send('window:control', action),
   onMaximizeChange: (cb) => listen('window:maximized', cb),
   setMiniMode: (on, labels) => ipcRenderer.send('window:set-mini', on === true, labels),

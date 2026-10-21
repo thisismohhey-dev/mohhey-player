@@ -82,7 +82,6 @@ export const api = {
   },
   library: {
     folders: async (): Promise<LibraryFolder[]> => (await request('/library/folders', Items(FolderSchema))).items,
-    addFolder: async (path: string): Promise<LibraryFolder[]> => (await request('/library/folders', Items(FolderSchema), { method: 'POST', body: { path } })).items,
     removeFolder: async (id: number): Promise<LibraryFolder[]> => (await request(`/library/folders/${id}`, Items(FolderSchema), { method: 'DELETE' })).items,
     scan: (): Promise<ScanStatus> => request('/library/scan', ScanStatusSchema, { method: 'POST' }),
     browse: (path = ''): Promise<BrowseResult> => request(`/library/browse${qs({ path })}`, BrowseResultSchema),
