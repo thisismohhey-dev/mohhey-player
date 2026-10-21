@@ -18,10 +18,10 @@ function commit(f: number): void {
 </script>
 
 <template>
-  <div class="flex w-full items-center gap-3">
+  <div dir="ltr" class="flex w-full items-center gap-3">
     <span class="w-11 text-end text-xs tabular text-muted-foreground">{{ formatTime(shown) }}</span>
     <Scrubber
-      :value="fraction" :label="t('player.seek')" :value-text="`${formatTime(shown)} of ${formatTime(duration)}`"
+      :value="fraction" :label="t('player.seek')" :value-text="t('{a} of {b}', { a: formatTime(shown), b: formatTime(duration) })"
       :step="duration ? Math.min(0.1, 5000 / duration) : 0.02" :disabled="!player.hasTrack || !duration"
       @input="preview = $event" @commit="commit"
     />
