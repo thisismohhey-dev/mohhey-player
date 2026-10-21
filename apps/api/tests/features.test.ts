@@ -9,6 +9,7 @@ import type { MetadataReader, ParsedTrack } from '../src/modules/library/scanner
 import { parseLrc } from '../src/modules/lyrics/lrc'
 
 const TOKEN = 'test-token-0123456789'
+const INTERNAL = 'internal-token-0123456789'
 let dir: string
 let music: string
 let db: Db
@@ -25,7 +26,7 @@ const reader: MetadataReader = async (path) => {
 }
 
 const call = (path: string, init: RequestInit = {}) =>
-  app.handle(new Request(`http://localhost${path}`, { ...init, headers: { 'content-type': 'application/json', authorization: `Bearer ${TOKEN}`, ...(init.headers ?? {}) } }))
+  app.handle(new Request(`http://localhost${path}`, { ...init, headers: { 'content-type': 'application/json', authorization: `Bearer ${TOKEN}`, 'x-mohhey-internal': INTERNAL, ...(init.headers ?? {}) } }))
 const json = async <T = any>(r: Response | Promise<Response>): Promise<T> => (await r).json() as Promise<T>
 const body = (b: unknown): RequestInit => ({ method: 'POST', body: JSON.stringify(b) })
 const scan = async () => {
@@ -40,7 +41,7 @@ beforeEach(() => {
   music = join(dir, 'music'); mkdirSync(music)
   db = openDatabase(':memory:')
   overrides = {}
-  app = createApp({ config: { token: TOKEN, allowedOrigins: [], artworkDir: join(dir, 'art') }, db, metadataReader: reader })
+  app = createApp({ config: { token: TOKEN, internalToken: INTERNAL, allowedOrigins: [], artworkDir: join(dir, 'art') }, db, metadataReader: reader })
 })
 afterEach(() => { db.close(); rmSync(dir, { recursive: true, force: true }) })
 
