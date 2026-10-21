@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { digits, locale, nf, setLocale, t, type Locale } from '@/lib/i18n'
 import { onMounted, ref } from 'vue'
-import { FolderPlus, Moon, Monitor, RefreshCw, Sun, Trash2, TriangleAlert } from 'lucide-vue-next'
+import { CopyCheck, FolderPlus, Moon, Monitor, RefreshCw, Sun, Trash2, TriangleAlert } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { api } from '@/lib/api'
 import { plural } from '@/lib/format'
 import { cn } from '@/lib/utils'
+import { EQ_BANDS } from '@mohhey/contracts'
+import { BAND_LABELS, EQ_PRESET_GAINS, EQ_PRESET_NAMES, presetEq } from '@/lib/player/eq-presets'
 import { useLibraryStore } from '@/stores/library'
 import { usePlayerStore } from '@/stores/player'
 import { useUiStore, type ThemeSetting } from '@/stores/ui'
@@ -13,10 +15,10 @@ import { useUiStore, type ThemeSetting } from '@/stores/ui'
 const library = useLibraryStore()
 const player = usePlayerStore()
 const ui = useUiStore()
-type Tab = 'library' | 'appearance' | 'playback' | 'shortcuts'
+type Tab = 'library' | 'appearance' | 'audio' | 'playback' | 'shortcuts'
 const TAB_KEY = 'mohhey.settingsTab'
 const tabs: { id: Tab; label: string }[] = [
-  { id: 'library', label: 'Library' }, { id: 'appearance', label: 'Appearance' }, { id: 'playback', label: 'Playback' }, { id: 'shortcuts', label: 'Shortcuts' },
+  { id: 'library', label: 'Library' }, { id: 'appearance', label: 'Appearance' }, { id: 'audio', label: 'Sound' }, { id: 'playback', label: 'Playback' }, { id: 'shortcuts', label: 'Shortcuts' },
 ]
 const savedTab = (): Tab => { try { const v = localStorage.getItem(TAB_KEY); return tabs.some((x) => x.id === v) ? (v as Tab) : 'library' } catch { return 'library' } }
 const tab = ref<Tab>(savedTab())
@@ -30,6 +32,13 @@ function tabKey(e: KeyboardEvent): void {
   selectTab(tabs[i]!.id)
   requestAnimationFrame(() => document.getElementById('tab-' + tabs[i]!.id)?.focus())
 }
+const eqGain = (i: number, v: number): void => {
+  const gains = [...player.eq.gains]
+  gains[i] = v
+  player.setEq({ ...player.eq, preset: 'custom', gains })
+}
+const pickPreset = (name: (typeof EQ_PRESET_NAMES)[number]): void => player.setEq(presetEq(name, true))
+const eqPresetLabel = (name: string) => t(({ flat: 'Flat', bass: 'Bass boost', treble: 'Treble boost', vocal: 'Vocal', rock: 'Rock', pop: 'Pop', classical: 'Classical', speech: 'Speech', custom: 'Custom' } as Record<string, string>)[name]!)
 const restoreQueue = ref(true)
 const recordHistory = ref(true)
 const cache = ref<{ files: number; bytes: number } | null>(null)
@@ -84,6 +93,7 @@ const switchCls = (on: boolean) => cn('relative h-6 w-11 shrink-0 rounded-full t
           <Button variant="secondary" class="rounded-full" :disabled="library.isScanning || !library.folders.length" @click="library.rescan()">
             <RefreshCw class="size-4" :class="library.isScanning && 'animate-spin'" />{{ t(library.isScanning ? 'Scanning…' : 'Rescan') }}
           </Button>
+          <Button as-child variant="secondary" class="rounded-full"><RouterLink :to="{ name: 'duplicates' }"><CopyCheck class="size-4" />{{ t('Find duplicates') }}</RouterLink></Button>
           <Button class="rounded-full" @click="library.addFolder()"><FolderPlus class="size-4" />{{ t('Add folder') }}</Button>
         </div>
       </div>
@@ -137,6 +147,57 @@ const switchCls = (on: boolean) => cn('relative h-6 w-11 shrink-0 rounded-full t
       </div>
     </section>
 
+    <section v-if="tab === 'audio'" id="panel-audio" role="tabpanel" aria-labelledby="tab-audio" class="mt-6">
+      <h2 class="mb-3 text-2xl font-medium">{{ t('Sound') }}</h2>
+      <ul class="divide-y overflow-hidden rounded-2xl bg-card shadow-card">
+        <li class="flex items-center justify-between gap-6 px-5 py-4">
+          <div><div class="text-[15px] font-medium">{{ t('Even out volume') }}</div><div class="text-sm text-muted-foreground">{{ t('Quiet podcasts and loud songs end up at a similar level. Uses ReplayGain tags when present, otherwise learns from the first seconds of each track.') }}</div></div>
+          <button role="switch" :aria-checked="player.normalize" :aria-label="t('Even out volume')" :class="switchCls(player.normalize)" @click="player.setNormalize(!player.normalize)"><span class="absolute top-0.5 size-5 rounded-full bg-white shadow transition-all" :class="player.normalize ? 'start-[22px]' : 'start-0.5'" /></button>
+        </li>
+        <li class="flex items-center justify-between gap-6 px-5 py-4">
+          <div><div class="text-[15px] font-medium">{{ t('Gapless playback') }}</div><div class="text-sm text-muted-foreground">{{ t('Prepares the next song in advance so albums play with as little gap as possible.') }}</div></div>
+          <button role="switch" :aria-checked="player.gapless" :aria-label="t('Gapless playback')" :class="switchCls(player.gapless)" @click="player.setGapless(!player.gapless)"><span class="absolute top-0.5 size-5 rounded-full bg-white shadow transition-all" :class="player.gapless ? 'start-[22px]' : 'start-0.5'" /></button>
+        </li>
+        <li class="px-5 py-4">
+          <div class="flex items-center justify-between gap-6">
+            <div><div class="text-[15px] font-medium">{{ t('Crossfade') }}</div><div class="text-sm text-muted-foreground">{{ t('Overlaps the end of a song with the start of the next.') }}</div></div>
+            <span class="tabular text-sm font-medium">{{ player.crossfadeSec === 0 ? t('Off') : digits(`${player.crossfadeSec} ${t('s')}`) }}</span>
+          </div>
+          <input
+            type="range" min="0" max="12" step="1" :value="player.crossfadeSec" :aria-label="t('Crossfade')" dir="ltr"
+            class="mt-3 w-full accent-[var(--brand)]" @input="player.setCrossfade(Number(($event.target as HTMLInputElement).value))"
+          />
+        </li>
+      </ul>
+
+      <div class="mb-3 mt-8 flex items-center justify-between">
+        <h2 class="text-2xl font-medium">{{ t('Equalizer') }}</h2>
+        <button role="switch" :aria-checked="player.eq.enabled" :aria-label="t('Equalizer')" :class="switchCls(player.eq.enabled)" @click="player.setEq({ ...player.eq, enabled: !player.eq.enabled })"><span class="absolute top-0.5 size-5 rounded-full bg-white shadow transition-all" :class="player.eq.enabled ? 'start-[22px]' : 'start-0.5'" /></button>
+      </div>
+      <div class="rounded-2xl bg-card p-5 shadow-card" :class="!player.eq.enabled && 'opacity-60'">
+        <div class="flex flex-wrap gap-2" role="radiogroup" :aria-label="t('Equalizer presets')">
+          <button
+            v-for="name in EQ_PRESET_NAMES" :key="name" role="radio" :aria-checked="player.eq.preset === name"
+            :class="cn('rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors', player.eq.preset === name ? 'bg-foreground text-background' : 'bg-foreground/[0.06] text-muted-foreground hover:text-foreground')"
+            @click="pickPreset(name)"
+          >{{ eqPresetLabel(name) }}</button>
+          <span v-if="player.eq.preset === 'custom'" class="rounded-full bg-brand/15 px-3.5 py-1.5 text-sm font-medium text-brand">{{ eqPresetLabel('custom') }}</span>
+        </div>
+        <div dir="ltr" class="mt-6 grid grid-cols-10 gap-1">
+          <label v-for="(f, i) in EQ_BANDS" :key="f" class="flex flex-col items-center gap-2 text-[11px] tabular text-muted-foreground">
+            <span>{{ player.eq.gains[i]! > 0 ? '+' : '' }}{{ player.eq.gains[i] }}</span>
+            <input
+              type="range" min="-12" max="12" step="1" :value="player.eq.gains[i]" :aria-label="`${BAND_LABELS[i]} Hz`"
+              class="h-36 accent-[var(--brand)] [writing-mode:vertical-lr] [direction:rtl]"
+              @input="eqGain(i, Number(($event.target as HTMLInputElement).value))"
+            />
+            <span>{{ BAND_LABELS[i] }}</span>
+          </label>
+        </div>
+        <p class="mt-4 text-[13px] text-muted-foreground">{{ t('Frequency bands in Hz. Drag a band to make your own preset.') }}</p>
+      </div>
+    </section>
+
     <section v-if="tab === 'playback'" id="panel-playback" role="tabpanel" aria-labelledby="tab-playback" class="mt-6">
       <h2 id="s-play" class="mb-3 text-2xl font-medium">{{ t('Playback & privacy') }}</h2>
       <ul class="divide-y overflow-hidden rounded-2xl bg-card shadow-card">
@@ -158,7 +219,7 @@ const switchCls = (on: boolean) => cn('relative h-6 w-11 shrink-0 rounded-full t
     <section v-if="tab === 'shortcuts'" id="panel-shortcuts" role="tabpanel" aria-labelledby="tab-shortcuts" class="mt-6">
       <h2 id="s-keys" class="mb-3 text-2xl font-medium">{{ t('Keyboard shortcuts') }}</h2>
       <dl class="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 rounded-2xl bg-card p-5 text-sm shadow-card">
-        <template v-for="[k, v] in [['Space', 'Play / pause'], ['Ctrl + → / ←', 'Next / previous track'], ['Ctrl + ↑ / ↓', 'Volume up / down'], ['M', 'Mute'], ['Q', 'Show or hide queue'], ['Ctrl + B', 'Collapse or expand the sidebar'], ['Ctrl + Shift + M', 'Mini player (always on top)'], ['Ctrl + K  or  /', 'Search'], ['Alt + ↑ / ↓', 'Move item in queue or playlist']]" :key="k">
+        <template v-for="[k, v] in [['Space', 'Play / pause'], ['Ctrl + → / ←', 'Next / previous track'], ['Ctrl + ↑ / ↓', 'Volume up / down'], ['M', 'Mute'], ['Q', 'Show or hide queue'], ['Ctrl + B', 'Collapse or expand the sidebar'], ['Ctrl + Shift + M', 'Mini player (always on top)'], ['Ctrl + K  or  /', 'Search'], ['Shift + → / ←', 'Skip back 15 s / forward 30 s'], ['Alt + ↑ / ↓', 'Move item in queue or playlist']]" :key="k">
           <dt><kbd class="rounded-md bg-foreground/[0.07] px-2 py-1 font-mono text-xs">{{ k }}</kbd></dt><dd class="py-1 text-muted-foreground">{{ t(v) }}</dd>
         </template>
       </dl>
