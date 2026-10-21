@@ -6,6 +6,8 @@ export interface DesktopBridge {
   pickFolder(): Promise<string | null>
   /** Keeps the native window-control glyphs readable when the app theme changes. */
   setTitleBarTheme(dark: boolean): void
+  /** Shrinks the window to a small always-on-top mini player (true) or restores it (false). */
+  setMiniMode(on: boolean): void
   platform: 'win32' | 'darwin' | 'linux'
 }
 
