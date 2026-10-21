@@ -7,6 +7,8 @@
 @font-face { font-family: "Inter"; src: url("../assets/fonts/Inter-Variable.ttf") format("truetype"); font-weight: 100 900; font-display: swap; }
 @font-face { font-family: "Geist Mono"; src: url("../assets/fonts/GeistMono-Variable.ttf") format("truetype"); font-weight: 100 900; font-display: swap; }
 
+@font-face { font-family: "Vazirmatn"; src: url("../assets/fonts/Vazirmatn-Variable.woff2") format("woff2"); font-weight: 100 900; font-display: swap; unicode-range: U+0600-06FF, U+0750-077F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF, U+200C-200D, U+060C, U+061B, U+061F, U+066A-066C; }
+
 @custom-variant dark (&:is(.dark *));
 
 /* ───────────────────────── Design tokens ─────────────────────────
@@ -73,7 +75,7 @@
 @theme inline {
   --font-sans: "Inter", "Vazirmatn", "Segoe UI", system-ui, sans-serif;
   --font-display: "Montreal", "Inter", "Vazirmatn", system-ui, sans-serif;
-  --font-mono: "Geist Mono", ui-monospace, monospace;
+  --font-mono: "Geist Mono", "Vazirmatn", ui-monospace, monospace;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -119,6 +121,10 @@
   }
   h1, h2, h3, .font-display { font-family: var(--font-display); letter-spacing: -0.02em; }
   input, [contenteditable] { user-select: text; }
+  /* Persian/Arabic letters must stay joined: no tracking, and a slightly looser line-height for the taller script. */
+  :lang(fa) *, [dir=rtl] * { letter-spacing: 0 !important; }
+  :lang(fa) h1, :lang(fa) h2, :lang(fa) h3 { line-height: 1.25; font-weight: 700; }
+  :lang(fa) .uppercase { text-transform: none; }
   :focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; border-radius: 6px; }
   ::-webkit-scrollbar { width: 10px; height: 10px; }
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 999px; border: 3px solid transparent; background-clip: content-box; }
