@@ -71,6 +71,10 @@ lives in the **system tray** next to the clock: click the tray icon to bring it 
 
 <sub>Screenshots use a small fictional library generated for the demo.</sub>
 
+## Smooth transitions
+Skipping to the next/previous track (or picking another one) fades the current sound out (~0.2 s) and the new one in (~0.4 s) instead of cutting it off;
+pause and resume have a short fade too. Pressing next several times skips several tracks and fades only once.
+
 ## Audio formats
 MP3, **FLAC**, OGG/Opus, WAV, M4A/AAC and WebM audio: the formats Chromium can decode. FLAC was verified on real files from a library
 (duration, tags, playback and seeking). Files are streamed with HTTP Range support, so seeking works on large files too.
