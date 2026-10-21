@@ -213,6 +213,16 @@ describe('playlists, favorites, history, settings', () => {
     expect((await call('/tracks/99999/played', { method: 'POST', body: JSON.stringify({ record: true }) })).status).toBe(404)
   })
 
+  test('a partial settings patch leaves every other setting untouched', async () => {
+    await call('/settings', { method: 'PATCH', body: JSON.stringify({ locale: 'fa', theme: 'dark', queue: { trackIds: [1, 2], index: 1, positionMs: 500 } }) })
+    await call('/settings', { method: 'PATCH', body: JSON.stringify({ volume: 0.5 }) })
+    const s = await json(call('/settings'))
+    expect(s.volume).toBe(0.5)
+    expect(s.locale).toBe('fa')
+    expect(s.theme).toBe('dark')
+    expect(s.queue).toEqual({ trackIds: [1, 2], index: 1, positionMs: 500 })
+  })
+
   test('settings persist and validate', async () => {
     expect((await json(call('/settings'))).volume).toBe(0.8)
     const r = await json(call('/settings', { method: 'PATCH', body: JSON.stringify({ volume: 0.3, repeat: 'all' }) }))
