@@ -1,0 +1,52 @@
+# Packaging for the Windows installer (macOS / Linux targets are configured but untested).
+appId: app.mohhey.player
+productName: Mohhey Player
+copyright: Mohhey
+directories:
+  output: dist
+  buildResources: resources
+
+# The main/preload/renderer bundles are fully self-contained; only icons from resources/ are read at runtime.
+files:
+  - out/**/*
+  - resources/icon.png
+  - resources/tray.png
+  - resources/tray@2x.png
+  - package.json
+
+# The compiled API (see scripts/build-api.mjs) lives next to the app, not inside the asar archive.
+extraResources:
+  - from: build/api
+    to: api
+
+asar: true
+npmRebuild: false
+# Never published automatically: updates are an explicit decision (see docs/agent.md).
+publish: null
+
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+  icon: resources/icon.ico
+  artifactName: Mohhey-Player-Setup-${version}.${ext}
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: Mohhey Player
+  uninstallDisplayName: Mohhey Player
+  # User data (library database, artwork cache) is kept on uninstall unless the user opts in.
+  deleteAppDataOnUninstall: false
+
+mac:
+  target: dmg
+  icon: resources/icon.png
+  category: public.app-category.music
+linux:
+  target: AppImage
+  icon: resources/icon.png
+  category: Audio
