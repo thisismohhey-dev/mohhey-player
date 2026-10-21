@@ -1,6 +1,7 @@
 import { onScopeDispose, ref, shallowRef, triggerRef, watch } from 'vue'
 import type { Track, TrackQuery } from '@mohhey/contracts'
 import { api, ApiClientError } from '@/lib/api'
+import { t } from '@/lib/i18n'
 import { useLibraryStore } from '@/stores/library'
 import { useUiStore } from '@/stores/ui'
 
@@ -44,7 +45,7 @@ export function usePagedTracks(getQuery: () => TrackQuery) {
       version.value++
       triggerRef(rows)
     } catch (e) {
-      if (gen === generation) error.value = e instanceof ApiClientError ? e.message : 'Could not load songs.'
+      if (gen === generation) error.value = e instanceof ApiClientError ? e.message : t(t('Could not load songs.'))
     } finally {
       inflight.delete(page)
     }
@@ -62,7 +63,7 @@ export function usePagedTracks(getQuery: () => TrackQuery) {
       total.value = res.total
       version.value++
     } catch (e) {
-      if (gen === generation) { error.value = e instanceof ApiClientError ? e.message : 'Could not load songs.'; rows.value = []; total.value = 0 }
+      if (gen === generation) { error.value = e instanceof ApiClientError ? e.message : t(t('Could not load songs.')); rows.value = []; total.value = 0 }
     } finally {
       if (gen === generation) loading.value = false
     }
