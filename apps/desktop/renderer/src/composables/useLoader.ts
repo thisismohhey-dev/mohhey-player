@@ -1,5 +1,6 @@
 import { onScopeDispose, ref, shallowRef, watch, type WatchSource } from 'vue'
 import { ApiClientError } from '@/lib/api'
+import { t } from '@/lib/i18n'
 import { useLibraryStore } from '@/stores/library'
 
 /** Runs `fn` now and whenever `deps` (or the library revision) change; guards against out-of-order responses. */
@@ -19,7 +20,7 @@ export function useLoader<T>(fn: () => Promise<T>, deps: WatchSource[] = [], opt
       const result = await fn()
       if (mine === run && alive) data.value = result
     } catch (e) {
-      if (mine === run && alive) error.value = e instanceof ApiClientError ? e.message : 'Something went wrong while loading.'
+      if (mine === run && alive) error.value = e instanceof ApiClientError ? e.message : t(t('Something went wrong while loading.'))
     } finally {
       if (mine === run && alive) loading.value = false
     }
