@@ -1,28 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- "M." logo: the letter M is the outline of PP Neue Montreal Bold, followed by the brand dot. -->
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#2a2825"/>
-      <stop offset="1" stop-color="#121110"/>
-    </linearGradient>
-    <linearGradient id="bar" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#fbfaf8"/>
-      <stop offset="1" stop-color="#d9d5cc"/>
-    </linearGradient>
     <linearGradient id="dot" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#ff7a4d"/>
       <stop offset="1" stop-color="#ff4a1a"/>
     </linearGradient>
   </defs>
-  <!-- squircle tile -->
-  <rect x="16" y="16" width="480" height="480" rx="116" fill="url(#bg)"/>
-  <rect x="16.5" y="16.5" width="479" height="479" rx="115.5" fill="none" stroke="#ffffff" stroke-opacity="0.07"/>
-  <!-- four sound bars standing on a shared baseline: an "M" skyline -->
-  <g transform="translate(-15 0)"><g fill="url(#bar)">
-    <rect x="92"  y="176" width="58" height="190" rx="29"/>
-    <rect x="172" y="108" width="58" height="258" rx="29"/>
-    <rect x="252" y="196" width="58" height="170" rx="29"/>
-    <rect x="332" y="148" width="58" height="218" rx="29"/>
-  </g>
-  <!-- the brand dot from "Mohhey." -->
-  <circle cx="421" cy="337" r="29" fill="url(#dot)"/></g>
+  <rect x="16" y="16" width="480" height="480" rx="116" fill="#f7f5f1"/>
+  <rect x="16.5" y="16.5" width="479" height="479" rx="115.5" fill="none" stroke="#171614" stroke-opacity="0.12"/>
+  <path fill="#171614" d="M151.06 373.98L151.06 227.13L151.72 227.13L195.61 373.98L237.19 373.98L281.08 227.13L281.74 227.13L281.74 373.98L337.84 373.98L337.84 138.03L265.24 138.03L216.73 288.5L216.07 288.5L167.56 138.03L94.96 138.03L94.96 373.98Z"/>
+  <circle cx="389" cy="345.9" r="28.1" fill="url(#dot)"/>
 </svg>
