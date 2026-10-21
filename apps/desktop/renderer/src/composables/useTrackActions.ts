@@ -1,3 +1,4 @@
+import { t } from '@/lib/i18n'
 import { useRouter } from 'vue-router'
 import type { Track } from '@mohhey/contracts'
 import { api, ApiClientError } from '@/lib/api'
@@ -16,14 +17,14 @@ export function useTrackActions() {
     try {
       const p = await api.playlists.addTracks(playlistId, tracks.map((t) => t.id))
       await library.refreshPlaylists()
-      ui.toast(`Added to ${p.name}`)
+      ui.toast(t('Added to {name}', { name: p.name }))
     } catch (e) {
-      ui.toast(e instanceof ApiClientError ? e.message : 'Couldn’t add to playlist.', 'error')
+      ui.toast(e instanceof ApiClientError ? e.message : t('Couldn’t add to playlist.'), 'error')
     }
   }
 
   async function addToNewPlaylist(tracks: Track[]): Promise<void> {
-    const name = await promptText({ title: 'New playlist', label: 'Name', confirmLabel: 'Create' })
+    const name = await promptText({ title: t('New playlist'), label: t('Name'), confirmLabel: t('Create') })
     if (!name) return
     const p = await library.createPlaylist(name)
     if (p && tracks.length) await addToPlaylist(p.id, tracks)
