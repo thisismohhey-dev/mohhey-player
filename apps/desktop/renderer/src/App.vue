@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import BrandMark from '@/components/BrandMark.vue'
 import { t } from '@/lib/i18n'
 import { onBeforeUnmount, onMounted, provide, ref } from 'vue'
 import { RouterView } from 'vue-router'
@@ -69,7 +70,7 @@ onBeforeUnmount(() => { offs.forEach((off) => off()); window.removeEventListener
   <TooltipProvider :delay-duration="300">
     <ErrorState v-if="fatal" :message="fatal" class="h-full" @retry="boot" />
     <div v-else-if="!library.loaded" class="grid h-full place-items-center" role="status" :aria-label="t('Loading')">
-      <div dir="ltr" class="font-display text-3xl font-bold tracking-tight">Mohhey<span class="text-brand">.</span></div>
+      <BrandMark :size="56" />
     </div>
     <Onboarding v-else-if="!library.hasLibrary" />
     <template v-else>
