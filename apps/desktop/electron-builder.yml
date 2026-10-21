@@ -29,14 +29,14 @@ win:
     - target: nsis
       arch: [x64]
   icon: resources/icon.ico
-  artifactName: Mohhey-Player-Setup-${version}.${ext}
+  artifactName: M-Player-Setup-${version}.${ext}
 
 nsis:
   # A step-by-step wizard: welcome > licence > install folder > install > finish. Nothing is pre-decided for the user.
   oneClick: false
-  perMachine: false
-  # No elevation prompt: the app installs for the current user only, so the installer never needs administrator rights.
-  allowElevation: false
+  # Installs into Program Files (64-bit) for all users; Windows asks for administrator approval once.
+  perMachine: true
+  allowElevation: true
   allowToChangeInstallationDirectory: true
   createDesktopShortcut: true
   createStartMenuShortcut: true

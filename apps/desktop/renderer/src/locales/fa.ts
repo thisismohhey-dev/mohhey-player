@@ -39,7 +39,7 @@ export const fa: { tree: Messages; literals: Record<string, string>; nouns: Reco
     'A fast, private music player for your own library. It reads the folders you choose, never changes or deletes your files, and never connects to the internet.': 'یک پخش‌کننده‌ی سریع و خصوصی برای کتابخانه‌ی موسیقی خودت. فقط پوشه‌هایی را که انتخاب می‌کنی می‌خواند، هرگز فایل‌هایت را تغییر نمی‌دهد یا پاک نمی‌کند، و هرگز به اینترنت وصل نمی‌شود.',
     'Persian and English, right-to-left and left-to-right': 'فارسی و انگلیسی، راست‌به‌چپ و چپ‌به‌راست',
     'Equalizer, crossfade, gapless playback, lyrics, sleep timer, mini player': 'اکولایزر، کراس‌فید، پخش بی‌وقفه، متن آهنگ، تایمر خواب، مینی‌پلیر',
-    'Hi, I’m Mohhey. I build software and care about tools that are quick, private and well designed. M. Player is made with that in mind, and I’d love to hear what you think.': 'سلام، من موهی هستم. نرم‌افزار می‌سازم و به ابزارهای سریع، خصوصی و خوش‌ساخت اهمیت می‌دهم. M. Player را با همین نگاه ساخته‌ام و خوشحال می‌شوم نظرت را بشنوم.',
+    'Hi, I’m Mohsen Heydari. I build software and care about tools that are quick, private and well designed. M. Player is made with that in mind, and I’d love to hear what you think.': 'سلام، من محسن حیدری هستم. نرم‌افزار می‌سازم و به ابزارهای سریع، خصوصی و خوش‌ساخت اهمیت می‌دهم. M. Player را با همین نگاه ساخته‌ام و خوشحال می‌شوم نظرت را بشنوم.',
     Playback: 'پخش', Shortcuts: 'میان‌برها', Quit: 'خروج', Close: 'بستن', Minimize: 'کوچک‌کردن', Maximize: 'بزرگ‌کردن', Restore: 'بازگرداندن', 'Window controls': 'دکمه‌های پنجره',
     'Expand sidebar': 'باز کردن نوار کناری', 'Collapse sidebar': 'جمع‌کردن نوار کناری', 'Collapse or expand the sidebar': 'جمع یا باز کردن نوار کناری',
     'Edit playlist': 'ویرایش پلی‌لیست', Icon: 'آیکون',

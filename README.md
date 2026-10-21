@@ -98,12 +98,12 @@ lives in the **system tray** next to the clock: click the tray icon to bring it 
 ## Build the installer (Windows)
 ```bash
 cd apps/desktop
-bun run dist          # → apps/desktop/dist/Mohhey-Player-Setup-<version>.exe
+bun run dist          # → apps/desktop/dist/M-Player-Setup-<version>.exe
 bun run dist:dir      # unpacked app only (faster, for testing)
 ```
 `dist` compiles the API into a self-contained executable (`scripts/build-api.mjs`), builds the renderer, and packages everything with
 electron-builder. The installer is a step-by-step wizard in the app's look (English / Persian): welcome → licence → install folder (you choose it) →
-install → finish. It installs per user without administrator rights; uninstalling asks before removing library data. See [SECURITY.md](SECURITY.md).
+install → finish. It installs into `C:Program FilesM. Player` (64-bit; Windows asks for administrator approval once); uninstalling asks before removing library data. See [SECURITY.md](SECURITY.md).
 `node scripts/checksums.mjs` writes `dist/SHA256SUMS.txt`. The installer is
 unsigned, so Windows SmartScreen will warn until it is code-signed. No auto-update is configured on purpose.
 

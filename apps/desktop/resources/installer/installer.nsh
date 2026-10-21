@@ -13,11 +13,6 @@ BrandingText "M. Player"
   !insertmacro MUI_LANGUAGE "Farsi"
 !macroend
 
-; The app installs for the current user only (no administrator rights), so the "anyone / only me" page is skipped.
-!macro customInstallMode
-  StrCpy $isForceCurrentInstall "1"
-!macroend
-
 LangString WelcomeTitle 1033 "Welcome to M. Player"
 LangString WelcomeTitle 1065 "به M. Player خوش آمدید"
 LangString WelcomeText 1033 "This wizard installs M. Player, an offline music player, step by step.$\r$\n$\r$\nNothing is chosen for you: you will review the licence and pick the install folder yourself. M. Player never connects to the internet and never touches your music files.$\r$\n$\r$\nClick Next to continue."

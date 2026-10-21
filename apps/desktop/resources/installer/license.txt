@@ -10,7 +10,7 @@ PRIVACY
 - The library database, artwork cache and settings are stored in %APPDATA%\Mohhey Player on your computer only.
 
 SECURITY
-- The installer asks for no administrator rights and installs for the current user only.
+- The installer installs into Program Files (64-bit) and asks for administrator approval once; the app itself runs without administrator rights.
 - The app runs a small local service on 127.0.0.1 protected by random per-launch secrets; it is not reachable from other computers.
 
 NO WARRANTY

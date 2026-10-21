@@ -240,7 +240,7 @@ const switchCls = (on: boolean) => cn('relative h-6 w-11 shrink-0 rounded-full t
       </div>
       <div class="rounded-2xl bg-card p-6 shadow-card">
         <h3 class="text-lg font-medium">{{ t('About the developer') }}</h3>
-        <p class="mt-2 max-w-2xl text-[15px] leading-relaxed text-muted-foreground">{{ t('Hi, I’m Mohhey. I build software and care about tools that are quick, private and well designed. M. Player is made with that in mind, and I’d love to hear what you think.') }}</p>
+        <p class="mt-2 max-w-2xl text-[15px] leading-relaxed text-muted-foreground">{{ t('Hi, I’m Mohsen Heydari. I build software and care about tools that are quick, private and well designed. M. Player is made with that in mind, and I’d love to hear what you think.') }}</p>
         <div class="mt-4">
           <Button variant="outline" @click="openLink('profile')"><ExternalLink class="size-4" />github.com/thisismohhey-dev</Button>
         </div>

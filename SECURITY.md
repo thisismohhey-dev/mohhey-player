@@ -15,7 +15,7 @@ what protects it and how each point was checked.
 | Secrets | Tokens are random per launch, compared in constant time, never logged, never given to the renderer (internal one) |
 | Packaged build | Electron fuses: no `RunAsNode`, no `NODE_OPTIONS`, no `--inspect`; app loads only from the integrity-checked `app.asar`; debug switches (`--remote-debugging-port`, …) are refused at startup |
 | API binary | Compiled executable started with a minimal environment |
-| Installer | Per-user, no administrator rights, explicit step-by-step wizard, uninstall asks before touching library data and never touches music |
+| Installer | Installs to Program Files (64-bit, one UAC prompt; the app itself runs unelevated), explicit step-by-step wizard, uninstall asks before touching library data and never touches music |
 
 ## Verification (re-run before a release)
 
