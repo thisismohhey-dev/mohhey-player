@@ -13,6 +13,23 @@ import { useUiStore, type ThemeSetting } from '@/stores/ui'
 const library = useLibraryStore()
 const player = usePlayerStore()
 const ui = useUiStore()
+type Tab = 'library' | 'appearance' | 'playback' | 'shortcuts'
+const TAB_KEY = 'mohhey.settingsTab'
+const tabs: { id: Tab; label: string }[] = [
+  { id: 'library', label: 'Library' }, { id: 'appearance', label: 'Appearance' }, { id: 'playback', label: 'Playback' }, { id: 'shortcuts', label: 'Shortcuts' },
+]
+const savedTab = (): Tab => { try { const v = localStorage.getItem(TAB_KEY); return tabs.some((x) => x.id === v) ? (v as Tab) : 'library' } catch { return 'library' } }
+const tab = ref<Tab>(savedTab())
+function selectTab(id: Tab): void { tab.value = id; try { localStorage.setItem(TAB_KEY, id) } catch { /* not persisted */ } }
+/** Arrow keys move between tabs, as in a native tab list. */
+function tabKey(e: KeyboardEvent): void {
+  const dir = (e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0) * (document.documentElement.dir === 'rtl' ? -1 : 1)
+  if (!dir) return
+  e.preventDefault()
+  const i = (tabs.findIndex((x) => x.id === tab.value) + dir + tabs.length) % tabs.length
+  selectTab(tabs[i]!.id)
+  requestAnimationFrame(() => document.getElementById('tab-' + tabs[i]!.id)?.focus())
+}
 const restoreQueue = ref(true)
 const recordHistory = ref(true)
 const cache = ref<{ files: number; bytes: number } | null>(null)
@@ -52,7 +69,15 @@ const switchCls = (on: boolean) => cn('relative h-6 w-11 shrink-0 rounded-full t
   <div class="mx-auto max-w-3xl px-8 pb-10 pt-6">
     <h1 class="text-[clamp(2.5rem,5vw,4.5rem)] font-medium leading-none">{{ t('Settings') }}</h1>
 
-    <section class="mt-10" aria-labelledby="s-lib">
+    <div class="mt-6 inline-flex max-w-full overflow-x-auto rounded-full bg-foreground/[0.06] p-1" role="tablist" :aria-label="t('Settings')" @keydown="tabKey">
+      <button
+        v-for="x in tabs" :id="'tab-' + x.id" :key="x.id" role="tab" :aria-selected="tab === x.id" :aria-controls="'panel-' + x.id" :tabindex="tab === x.id ? 0 : -1"
+        :class="cn('shrink-0 rounded-full px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground', tab === x.id && 'bg-card text-foreground shadow-card')"
+        @click="selectTab(x.id)"
+      >{{ t(x.label) }}</button>
+    </div>
+
+    <section v-if="tab === 'library'" id="panel-library" role="tabpanel" aria-labelledby="tab-library" class="mt-6">
       <div class="mb-3 flex items-center justify-between">
         <h2 id="s-lib" class="text-2xl font-medium">{{ t('Music folders') }}</h2>
         <div class="flex gap-2">
@@ -90,7 +115,7 @@ const switchCls = (on: boolean) => cn('relative h-6 w-11 shrink-0 rounded-full t
       </div>
     </section>
 
-    <section class="mt-10" aria-labelledby="s-look">
+    <section v-if="tab === 'appearance'" id="panel-appearance" role="tabpanel" aria-labelledby="tab-appearance" class="mt-6">
       <h2 id="s-look" class="mb-3 text-2xl font-medium">{{ t('Appearance') }}</h2>
       <div class="inline-flex rounded-full bg-foreground/[0.06] p-1" role="radiogroup" :aria-label="t('Theme')">
         <button
@@ -101,7 +126,7 @@ const switchCls = (on: boolean) => cn('relative h-6 w-11 shrink-0 rounded-full t
       </div>
     </section>
 
-    <section class="mt-10" aria-labelledby="s-lang">
+    <section v-if="tab === 'appearance'" class="mt-10" aria-labelledby="s-lang">
       <h2 id="s-lang" class="mb-3 text-2xl font-medium">{{ t('Language') }}</h2>
       <div class="inline-flex rounded-full bg-foreground/[0.06] p-1" role="radiogroup" :aria-label="t('Language')">
         <button
@@ -112,7 +137,7 @@ const switchCls = (on: boolean) => cn('relative h-6 w-11 shrink-0 rounded-full t
       </div>
     </section>
 
-    <section class="mt-10" aria-labelledby="s-play">
+    <section v-if="tab === 'playback'" id="panel-playback" role="tabpanel" aria-labelledby="tab-playback" class="mt-6">
       <h2 id="s-play" class="mb-3 text-2xl font-medium">{{ t('Playback & privacy') }}</h2>
       <ul class="divide-y overflow-hidden rounded-2xl bg-card shadow-card">
         <li class="flex items-center justify-between gap-6 px-5 py-4">
@@ -130,7 +155,7 @@ const switchCls = (on: boolean) => cn('relative h-6 w-11 shrink-0 rounded-full t
       </ul>
     </section>
 
-    <section class="mt-10" aria-labelledby="s-keys">
+    <section v-if="tab === 'shortcuts'" id="panel-shortcuts" role="tabpanel" aria-labelledby="tab-shortcuts" class="mt-6">
       <h2 id="s-keys" class="mb-3 text-2xl font-medium">{{ t('Keyboard shortcuts') }}</h2>
       <dl class="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 rounded-2xl bg-card p-5 text-sm shadow-card">
         <template v-for="[k, v] in [['Space', 'Play / pause'], ['Ctrl + → / ←', 'Next / previous track'], ['Ctrl + ↑ / ↓', 'Volume up / down'], ['M', 'Mute'], ['Q', 'Show or hide queue'], ['Ctrl + B', 'Collapse or expand the sidebar'], ['Ctrl + Shift + M', 'Mini player (always on top)'], ['Ctrl + K  or  /', 'Search'], ['Alt + ↑ / ↓', 'Move item in queue or playlist']]" :key="k">
