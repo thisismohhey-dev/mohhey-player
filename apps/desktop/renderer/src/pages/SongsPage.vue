@@ -36,5 +36,5 @@ function setSort(s: TrackSort): void {
   </header>
   <ErrorState v-if="error" :message="error" @retry="reload" />
   <EmptyState v-else-if="!loading && !total" :icon="Music" :title="filter ? t('empty.searchTitle') : t('empty.songsTitle')" :body="filter ? t('empty.searchBody') : t('empty.songsBody')" />
-  <div v-else class="px-4"><TrackList :source="source" :sort="sort" :dir="dir" sortable @sort="setSort" /></div>
+  <div v-else class="px-4"><TrackList :source="source" :sort="sort" :dir="dir" sortable numbered @sort="setSort" /></div>
 </template>
