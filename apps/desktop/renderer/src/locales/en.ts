@@ -31,3 +31,6 @@ type Path<T, P extends string = ''> = {
   [K in keyof T & string]: T[K] extends string ? `${P}${K}` : Path<T[K], `${P}${K}.`>
 }[keyof T & string]
 export type MessageKey = Path<typeof en>
+
+type DeepStr<T> = { [K in keyof T]: T[K] extends string ? string : DeepStr<T[K]> }
+export type Messages = DeepStr<typeof en>
