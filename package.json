@@ -2,9 +2,16 @@
   "name": "mohhey-player",
   "private": true,
   "version": "0.1.0",
-  "workspaces": ["apps/*", "packages/*"],
-  "trustedDependencies": ["electron", "esbuild"],
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "trustedDependencies": [
+    "electron",
+    "esbuild"
+  ],
   "scripts": {
+    "start": "node scripts/start.mjs",
     "dev": "bun run --cwd apps/desktop dev",
     "build": "bun run --cwd apps/desktop build",
     "typecheck": "bun run --cwd packages/contracts typecheck && bun run --cwd apps/api typecheck && bun run --cwd apps/desktop typecheck",
