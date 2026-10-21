@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "jsx": "preserve",
+    "types": ["vite/client"],
+    "baseUrl": ".",
+    "paths": { "@/*": ["renderer/src/*"] }
+  },
+  "include": ["renderer/src/**/*", "renderer/src/**/*.vue", "tests/**/*", "vitest.config.ts"]
+}
