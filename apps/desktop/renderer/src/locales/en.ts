@@ -2,7 +2,7 @@
 export const en = {
   appName: 'Mohhey',
   nav: {
-    home: 'Home', songs: 'Songs', albums: 'Albums', artists: 'Artists', favorites: 'Favorites',
+    home: 'Home', songs: 'Songs', folders: 'Folders', albums: 'Albums', artists: 'Artists', favorites: 'Favorites',
     playlists: 'Playlists', search: 'Search', settings: 'Settings', library: 'Library', newPlaylist: 'New playlist',
   },
   player: {
