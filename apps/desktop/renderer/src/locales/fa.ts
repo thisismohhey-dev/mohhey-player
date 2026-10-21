@@ -35,6 +35,9 @@ export const fa: { tree: Messages; literals: Record<string, string>; nouns: Reco
   },
   nouns: { song: 'آهنگ', album: 'آلبوم', artist: 'هنرمند', playlist: 'پلی‌لیست', image: 'تصویر', problem: 'مشکل' },
   literals: {
+    Quit: 'خروج', Close: 'بستن', Minimize: 'کوچک‌کردن', Maximize: 'بزرگ‌کردن', Restore: 'بازگرداندن', 'Window controls': 'دکمه‌های پنجره',
+    'Expand sidebar': 'باز کردن نوار کناری', 'Collapse sidebar': 'جمع‌کردن نوار کناری', 'Collapse or expand the sidebar': 'جمع یا باز کردن نوار کناری',
+    'Edit playlist': 'ویرایش پلی‌لیست', Icon: 'آیکون',
     Artist: 'هنرمند', Playlist: 'پلی‌لیست', Play: 'پخش', Shuffle: 'تصادفی', Cancel: 'انصراف', Save: 'ذخیره', Create: 'ساخت', Rename: 'تغییر نام', Delete: 'حذف',
     Name: 'نام', 'Clear upcoming': 'پاک‌کردن بعدی‌ها', 'See all': 'مشاهده‌ی همه', 'Scanning library': 'در حال اسکن کتابخانه',
     Title: 'عنوان', Album: 'آلبوم', Time: 'زمان', Songs: 'آهنگ‌ها', Albums: 'آلبوم‌ها', Artists: 'هنرمندان', Favorites: 'علاقه‌مندی‌ها',
@@ -77,7 +80,7 @@ export const fa: { tree: Messages; literals: Record<string, string>; nouns: Reco
     'Artwork cache': 'کش کاورها', 'Clear & rebuild': 'پاک‌کردن و ساخت دوباره', 'Keyboard shortcuts': 'میان‌برهای صفحه‌کلید',
     'Play / pause': 'پخش / توقف', 'Next / previous track': 'آهنگ بعدی / قبلی', 'Volume up / down': 'افزایش / کاهش صدا', Mute: 'بی‌صدا',
     'Show or hide queue': 'نمایش یا پنهان‌کردن صف', Search: 'جست‌وجو', 'Move item in queue or playlist': 'جابه‌جایی آیتم در صف یا پلی‌لیست',
-    '{a} of {b}': '{a} از {b}', 'Loading': 'در حال بارگذاری', 'Close': 'بستن',
+    '{a} of {b}': '{a} از {b}', 'Loading': 'در حال بارگذاری',
     'English': 'English', 'Persian': 'فارسی',
     'Choose a music folder': 'انتخاب پوشه‌ی موسیقی',
   },
