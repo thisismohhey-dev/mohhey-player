@@ -1,3 +1,4 @@
+import { t } from '@/lib/i18n'
 import { defineStore } from 'pinia'
 import { computed, markRaw, ref, shallowRef, triggerRef } from 'vue'
 import type { RepeatMode, Track } from '@mohhey/contracts'
@@ -156,7 +157,7 @@ export const usePlayerStore = defineStore('player', () => {
     queue.add(tracks, where)
     if (wasEmpty) loadCurrent(false)
     else { touchQueue(); persistQueue() }
-    ui.toast(where === 'next' ? 'Playing next' : 'Added to queue')
+    ui.toast(t(where === 'next' ? 'Playing next' : 'Added to queue'))
   }
 
   function removeFromQueue(pos: number): void {
@@ -175,7 +176,7 @@ export const usePlayerStore = defineStore('player', () => {
     patchTrack(track.id, { favorite: value })
     try { await api.tracks.setFavorite(track.id, value) } catch {
       patchTrack(track.id, { favorite: !value })
-      ui.toast('Couldn’t update favorite', 'error')
+      ui.toast(t('Couldn’t update favorite'), 'error')
     }
   }
 
