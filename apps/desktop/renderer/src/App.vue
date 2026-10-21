@@ -78,7 +78,7 @@ onBeforeUnmount(() => { offs.forEach((off) => off()); window.removeEventListener
       <Sidebar />
       <div class="relative flex min-w-0 flex-1 flex-col">
         <TopBar />
-        <main ref="mainScroll" class="relative min-h-0 flex-1 overflow-y-auto overflow-x-hidden pb-[148px]" tabindex="-1">
+        <main ref="mainScroll" class="relative min-h-0 [scrollbar-gutter:stable] flex-1 overflow-y-auto overflow-x-hidden pb-[148px]" tabindex="-1">
           <RouterView v-slot="{ Component, route }">
             <Transition name="page" mode="out-in">
               <component :is="Component" :key="route.name === 'search' ? 'search' : route.fullPath" />
