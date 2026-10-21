@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button'
 import { api, ApiClientError } from '@/lib/api'
 import { formatLong, plural } from '@/lib/format'
 import { t } from '@/lib/i18n'
-import { promptText } from '@/composables/usePrompt'
+import { iconFor } from '@/lib/playlistIcons'
+import { usePlaylistActions } from '@/composables/usePlaylistActions'
 import { useLoader } from '@/composables/useLoader'
 import { arraySource } from '@/composables/usePagedTracks'
 import { useLibraryStore } from '@/stores/library'
@@ -19,6 +20,7 @@ import TrackList from '@/components/TrackList.vue'
 
 const props = defineProps<{ id: string }>()
 const router = useRouter()
+const actions = usePlaylistActions()
 const library = useLibraryStore()
 const ui = useUiStore()
 const pid = computed(() => Number(props.id))
@@ -31,15 +33,12 @@ const source = computed(() => arraySource(data.value?.tracks ?? []))
 
 const fail = (e: unknown, fallback: string) => ui.toast(e instanceof ApiClientError ? e.message : fallback, 'error')
 
-async function rename(): Promise<void> {
-  const name = await promptText({ title: t('Rename playlist'), label: t('Name'), initial: data.value?.playlist.name, confirmLabel: t('Rename') })
-  if (!name) return
-  try { await api.playlists.rename(pid.value, name); await Promise.all([reload(), library.refreshPlaylists()]) } catch (e) { fail(e, t('Couldn’t rename the playlist.')) }
+async function editPlaylist(): Promise<void> {
+  if (data.value && (await actions.edit(data.value.playlist))) await reload()
 }
 
 async function remove(): Promise<void> {
-  if (!confirm(t('Delete “{name}”? The songs themselves stay in your library.', { name: data.value?.playlist.name ?? '' }))) return
-  try { await api.playlists.remove(pid.value); await library.refreshPlaylists(); void router.replace({ name: 'playlists' }) } catch (e) { fail(e, t('Couldn’t delete the playlist.')) }
+  if (data.value) await actions.remove(data.value.playlist, pid.value)
 }
 
 async function removeAt(index: number): Promise<void> {
@@ -62,12 +61,12 @@ async function move(from: number, to: number): Promise<void> {
   <ErrorState v-if="error" :message="error" @retry="reload" />
   <template v-else-if="data">
     <PageHero
-      :title="data.playlist.name" :eyebrow="t('Playlist')" :mosaic="data.playlist.coverHashes"
+      :title="data.playlist.name" :eyebrow="t('Playlist')" :icon="iconFor(data.playlist.icon)" :mosaic="data.playlist.coverHashes"
       :meta="[plural(data.playlist.trackCount, 'song'), data.playlist.durationMs ? formatLong(data.playlist.durationMs) : ''].filter(Boolean).join(' · ')"
     >
       <template #actions>
         <PlayActions :load="source.all" :disabled="!data.tracks.length" />
-        <Button variant="ghost" size="icon" class="size-11 rounded-full" :aria-label="t('Rename playlist')" :title="t('Rename')" @click="rename"><Pencil class="size-4" /></Button>
+        <Button variant="ghost" size="icon" class="size-11 rounded-full" :aria-label="t('Edit playlist')" :title="t('Edit playlist')" @click="editPlaylist"><Pencil class="size-4" /></Button>
         <Button variant="ghost" size="icon" class="size-11 rounded-full text-destructive hover:text-destructive" :aria-label="t('Delete playlist')" :title="t('Delete')" @click="remove"><Trash2 class="size-4" /></Button>
       </template>
     </PageHero>
