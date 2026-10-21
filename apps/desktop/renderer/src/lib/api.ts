@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { t } from '@/lib/i18n'
 import {
   AlbumSchema, AppSettingsSchema, BrowseResultSchema, ArtistSchema, FolderSchema, Page, PlaylistSchema, ScanStatusSchema, SearchResultSchema, TrackSchema,
   type Album, type PlaylistIcon, type AppSettings, type BrowseResult, type AppSettingsPatch, type Artist, type LibraryFolder, type Paged, type Playlist, type ScanStatus,
@@ -25,15 +26,15 @@ async function request<S extends z.ZodType>(
       body: init.body !== undefined ? JSON.stringify(init.body) : undefined,
     })
   } catch {
-    throw new ApiClientError('network', 'The library service is not responding. Please restart the app.')
+    throw new ApiClientError('network', t('The library service is not responding. Please restart the app.'))
   }
   const data: unknown = await res.json().catch(() => null)
   if (!res.ok) {
-    const message = (data as { message?: string } | null)?.message ?? 'The request failed.'
+    const message = t((data as { message?: string } | null)?.message ?? 'The request failed.')
     throw new ApiClientError('api', message, res.status)
   }
   const parsed = schema.safeParse(data)
-  if (!parsed.success) throw new ApiClientError('api', 'The library service returned an unexpected response.', res.status)
+  if (!parsed.success) throw new ApiClientError('api', t(t('The library service returned an unexpected response.')), res.status)
   return parsed.data
 }
 
