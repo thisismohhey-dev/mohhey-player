@@ -1,13 +1,26 @@
+export type WindowControl = 'minimize' | 'maximize' | 'close'
+export type TrayCommand = 'play-pause' | 'next' | 'previous'
+/** Localised menu labels for the tray icon (the main process has no access to the UI language). */
+export interface TrayLabels { show: string; playPause: string; next: string; previous: string; quit: string; tooltip: string }
+
 /** Typed surface exposed by the Electron preload script on `window.mohhey`. Nothing else crosses the boundary. */
 export interface DesktopBridge {
   /** Connection info for the local API. The token is generated per launch and never persisted. */
   getApiConfig(): Promise<{ baseUrl: string; token: string }>
   /** Opens the native folder dialog. Resolves to null when cancelled. */
   pickFolder(): Promise<string | null>
-  /** Keeps the native window-control glyphs readable when the app theme changes. */
-  setTitleBarTheme(dark: boolean): void
-  /** Shrinks the window to a small always-on-top mini player (true) or restores it (false). */
-  setMiniMode(on: boolean): void
+  /** Custom title-bar buttons (Windows/Linux; macOS keeps its native traffic lights). */
+  windowControl(action: WindowControl): void
+  onMaximizeChange(cb: (maximized: boolean) => void): () => void
+  /**
+   * Shrinks the window to an always-on-top mini player (true) or restores it (false).
+   * While mini, the app leaves the taskbar and lives in the system tray (notification area).
+   */
+  setMiniMode(on: boolean, labels?: TrayLabels): void
+  /** Fires when the main process changes mini mode on its own (e.g. a tray click). */
+  onMiniChange(cb: (mini: boolean) => void): () => void
+  /** Playback commands chosen from the tray menu. */
+  onTrayCommand(cb: (cmd: TrayCommand) => void): () => void
   platform: 'win32' | 'darwin' | 'linux'
 }
 
