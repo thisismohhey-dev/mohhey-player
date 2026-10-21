@@ -93,7 +93,7 @@ const switchCls = (on: boolean) => cn('relative h-6 w-11 shrink-0 rounded-full t
             <div class="truncate text-[15px] font-medium" :title="f.path">{{ f.path }}</div>
             <div class="text-sm text-muted-foreground">{{ plural(f.trackCount, 'song') }}</div>
           </div>
-          <Button variant="ghost" size="icon" class="rounded-full text-muted-foreground hover:text-destructive" :aria-label="t('Remove {title} from queue', { title: f.path })" :title="t('Remove from library (files are not deleted)')" @click="library.removeFolder(f.id)"><Trash2 class="size-4" /></Button>
+          <Button variant="ghost" size="icon" class="rounded-full text-muted-foreground hover:text-destructive" :aria-label="t('Remove folder {name}', { name: f.path })" :title="t('Remove from library (files are not deleted)')" @click="library.removeFolder(f.id)"><Trash2 class="size-4" /></Button>
         </li>
       </ul>
       <p class="mt-2 text-[13px] text-muted-foreground">{{ t('Removing a folder only removes it from Mohhey. Your files are never touched.') }}</p>
@@ -108,7 +108,7 @@ const switchCls = (on: boolean) => cn('relative h-6 w-11 shrink-0 rounded-full t
         <details v-if="library.scan.errors.length" class="mt-3">
           <summary class="flex cursor-pointer items-center gap-2 text-sm font-medium text-destructive"><TriangleAlert class="size-4" />{{ locale === 'fa' ? t('Problems — show details') + ' (' + nf(library.scan.errors.length) + ')' : `${library.scan.errors.length} problem${library.scan.errors.length === 1 ? '' : 's'} — show details` }}</summary>
           <ul class="mt-2 max-h-48 space-y-2 overflow-y-auto text-[13px]">
-            <li v-for="e in library.scan.errors" :key="e.path + e.message"><div class="truncate font-medium" :title="e.path">{{ e.path || 'Scan' }}</div><div class="text-muted-foreground">{{ e.message }}</div></li>
+            <li v-for="e in library.scan.errors" :key="e.path + e.message"><div class="truncate font-medium" :title="e.path">{{ e.path || t('Scan') }}</div><div class="text-muted-foreground">{{ t(e.message) }}</div></li>
           </ul>
           <Button variant="outline" size="sm" class="mt-3 rounded-full" :disabled="library.isScanning" @click="library.rescan()">{{ t('Try again') }}</Button>
         </details>
