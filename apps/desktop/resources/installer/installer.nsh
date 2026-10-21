@@ -50,18 +50,47 @@ LangString perMachineInstall 1065 "یک نصب برای همه‌ی کاربرا
 LangString reinstallUpgrade 1065 "دوباره‌نصب/به‌روزرسانی انجام می‌شود."
 LangString uninstall 1065 "حذف انجام می‌شود."
 
+LangString ResetDataPrompt 1033 "A library from a previous M. Player was found on this computer.$\r$\n$\r$\nYes: start with an empty library and choose your music folders yourself (the old data is kept in a backup folder).$\r$\nNo: keep the existing library."
+LangString ResetDataPrompt 1065 "کتابخانه‌ی یک نسخه‌ی قبلی M. Player روی این رایانه پیدا شد.$\r$\n$\r$\nبله: با کتابخانه‌ی خالی شروع کن و پوشه‌های موسیقی را خودم انتخاب می‌کنم (اطلاعات قبلی در یک پوشه‌ی پشتیبان می‌ماند).$\r$\nخیر: کتابخانه‌ی موجود حفظ شود."
+
 !macro customWelcomePage
   !define MUI_WELCOMEPAGE_TITLE "$(WelcomeTitle)"
   !define MUI_WELCOMEPAGE_TEXT "$(WelcomeText)"
   !insertmacro MUI_PAGE_WELCOME
 !macroend
 
-; Library data lives in %APPDATA%\Mohhey Player. It is kept unless the user says otherwise (never when updating or silent).
+; Library data lives in %APPDATA%\Mohhey Player (the current user's, even for an all-users install). It is kept unless the user says
+; otherwise (never when updating or silent).
 !macro customUnInstall
   ${ifNot} ${isUpdated}
   ${ifNot} ${Silent}
-    MessageBox MB_YESNO|MB_ICONQUESTION|MB_DEFBUTTON2 "$(RemoveDataPrompt)" IDNO +2
+    MessageBox MB_YESNO|MB_ICONQUESTION|MB_DEFBUTTON2 "$(RemoveDataPrompt)" IDNO mpKeepData
+    SetShellVarContext current
     RMDir /r "$APPDATA\Mohhey Player"
+    ${if} $installMode == "all"
+      SetShellVarContext all
+    ${endIf}
+    mpKeepData:
+  ${endIf}
+  ${endIf}
+!macroend
+
+; A fresh install starts "raw": no library and no music folders. If data from an earlier version exists, offer to set it aside
+; (renamed, never deleted) so the app asks for the music folders on its first start.
+!macro customInstall
+  ${ifNot} ${Silent}
+  ${ifNot} ${isUpdated}
+    SetShellVarContext current
+    ${if} ${FileExists} "$APPDATA\Mohhey Player\data\library.db"
+      MessageBox MB_YESNO|MB_ICONQUESTION "$(ResetDataPrompt)" IDNO mpKeepLibrary
+      System::Call 'kernel32::GetTickCount()i.r0'
+      ClearErrors
+      Rename "$APPDATA\Mohhey Player" "$APPDATA\Mohhey Player.backup-$0"
+    ${endIf}
+    mpKeepLibrary:
+    ${if} $installMode == "all"
+      SetShellVarContext all
+    ${endIf}
   ${endIf}
   ${endIf}
 !macroend
