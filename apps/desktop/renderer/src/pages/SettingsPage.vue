@@ -118,7 +118,7 @@ const switchCls = (on: boolean) => cn('relative h-6 w-11 shrink-0 rounded-full t
     <section class="mt-10" aria-labelledby="s-keys">
       <h2 id="s-keys" class="mb-3 text-2xl font-medium">Keyboard shortcuts</h2>
       <dl class="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 rounded-2xl bg-card p-5 text-sm shadow-card">
-        <template v-for="[k, v] in [['Space', 'Play / pause'], ['Ctrl + → / ←', 'Next / previous track'], ['Ctrl + ↑ / ↓', 'Volume up / down'], ['M', 'Mute'], ['Q', 'Show or hide queue'], ['Ctrl + K  or  /', 'Search'], ['Alt + ↑ / ↓', 'Move item in queue or playlist']]" :key="k">
+        <template v-for="[k, v] in [['Space', 'Play / pause'], ['Ctrl + → / ←', 'Next / previous track'], ['Ctrl + ↑ / ↓', 'Volume up / down'], ['M', 'Mute'], ['Q', 'Show or hide queue'], ['Ctrl + Shift + M', 'Mini player (always on top)'], ['Ctrl + K  or  /', 'Search'], ['Alt + ↑ / ↓', 'Move item in queue or playlist']]" :key="k">
           <dt><kbd class="rounded-md bg-foreground/[0.07] px-2 py-1 font-mono text-xs">{{ k }}</kbd></dt><dd class="py-1 text-muted-foreground">{{ v }}</dd>
         </template>
       </dl>
