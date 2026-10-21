@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { digits, locale, nf, setLocale, t, type Locale } from '@/lib/i18n'
 import { onMounted, ref } from 'vue'
-import { CopyCheck, FolderPlus, Moon, Monitor, RefreshCw, Sun, Trash2, TriangleAlert } from 'lucide-vue-next'
+import { CopyCheck, ExternalLink, FolderPlus, Moon, Monitor, RefreshCw, Sun, Trash2, TriangleAlert } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { api } from '@/lib/api'
 import { plural } from '@/lib/format'
@@ -12,13 +12,14 @@ import { useLibraryStore } from '@/stores/library'
 import { usePlayerStore } from '@/stores/player'
 import { useUiStore, type ThemeSetting } from '@/stores/ui'
 
+const openLink = (page: 'repo' | 'profile'): void => window.mohhey.openLink(page)
 const library = useLibraryStore()
 const player = usePlayerStore()
 const ui = useUiStore()
-type Tab = 'library' | 'appearance' | 'audio' | 'playback' | 'shortcuts'
+type Tab = 'library' | 'appearance' | 'audio' | 'playback' | 'shortcuts' | 'about'
 const TAB_KEY = 'mohhey.settingsTab'
 const tabs: { id: Tab; label: string }[] = [
-  { id: 'library', label: 'Library' }, { id: 'appearance', label: 'Appearance' }, { id: 'audio', label: 'Sound' }, { id: 'playback', label: 'Playback' }, { id: 'shortcuts', label: 'Shortcuts' },
+  { id: 'library', label: 'Library' }, { id: 'appearance', label: 'Appearance' }, { id: 'audio', label: 'Sound' }, { id: 'playback', label: 'Playback' }, { id: 'shortcuts', label: 'Shortcuts' }, { id: 'about', label: 'About' },
 ]
 const savedTab = (): Tab => { try { const v = localStorage.getItem(TAB_KEY); return tabs.some((x) => x.id === v) ? (v as Tab) : 'library' } catch { return 'library' } }
 const tab = ref<Tab>(savedTab())
@@ -223,6 +224,27 @@ const switchCls = (on: boolean) => cn('relative h-6 w-11 shrink-0 rounded-full t
           <dt><kbd class="rounded-md bg-foreground/[0.07] px-2 py-1 font-mono text-xs">{{ k }}</kbd></dt><dd class="py-1 text-muted-foreground">{{ t(v) }}</dd>
         </template>
       </dl>
+    </section>
+    <section v-if="tab === 'about'" id="panel-about" role="tabpanel" aria-labelledby="tab-about" class="mt-6 space-y-5">
+      <div class="rounded-2xl bg-card p-6 shadow-card">
+        <h2 class="text-2xl font-medium">M. Player</h2>
+        <p class="mt-3 max-w-2xl text-[15px] leading-relaxed text-muted-foreground">{{ t('A fast, private music player for your own library. It reads the folders you choose, never changes or deletes your files, and never connects to the internet.') }}</p>
+        <ul class="mt-4 space-y-1.5 text-sm text-muted-foreground">
+          <li>• {{ t('Everything stays on your computer') }}</li>
+          <li>• {{ t('Persian and English, right-to-left and left-to-right') }}</li>
+          <li>• {{ t('Equalizer, crossfade, gapless playback, lyrics, sleep timer, mini player') }}</li>
+        </ul>
+        <div class="mt-5">
+          <Button variant="outline" @click="openLink('repo')"><ExternalLink class="size-4" />{{ t('Project on GitHub') }}</Button>
+        </div>
+      </div>
+      <div class="rounded-2xl bg-card p-6 shadow-card">
+        <h3 class="text-lg font-medium">{{ t('About the developer') }}</h3>
+        <p class="mt-2 max-w-2xl text-[15px] leading-relaxed text-muted-foreground">{{ t('Hi, I’m Mohhey. I build software and care about tools that are quick, private and well designed. M. Player is made with that in mind, and I’d love to hear what you think.') }}</p>
+        <div class="mt-4">
+          <Button variant="outline" @click="openLink('profile')"><ExternalLink class="size-4" />github.com/thisismohhey-dev</Button>
+        </div>
+      </div>
     </section>
   </div>
 </template>
