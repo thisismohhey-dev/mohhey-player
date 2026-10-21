@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/lib/i18n'
 import { computed } from 'vue'
 import { api } from '@/lib/api'
 import { plural } from '@/lib/format'
@@ -24,14 +25,14 @@ const albums = computed(() => data.value?.albums.items.filter((a) => a.artist ==
 <template>
   <ErrorState v-if="error" :message="error" @retry="reload" />
   <template v-else-if="data">
-    <PageHero :title="data.artist.name" eyebrow="Artist" round kind="artist" :hash="data.artist.artworkHash" :meta="`${plural(data.artist.trackCount, 'song')} · ${plural(data.artist.albumCount, 'album')}`">
+    <PageHero :title="data.artist.name" :eyebrow="t('Artist')" round kind="artist" :hash="data.artist.artworkHash" :meta="`${plural(data.artist.trackCount, 'song')} · ${plural(data.artist.albumCount, 'album')}`">
       <template #actions><PlayActions :load="source.all" :disabled="!total" /></template>
     </PageHero>
-    <Shelf v-if="albums.length" title="Albums">
+    <Shelf v-if="albums.length" :title="t('Albums')">
       <div class="grid grid-cols-[repeat(auto-fill,minmax(168px,1fr))] gap-2">
         <MediaCard v-for="a in albums" :key="a.id" :to="{ name: 'album', params: { id: a.id } }" :title="a.title" :subtitle="String(a.year ?? '')" :hash="a.artworkHash" />
       </div>
     </Shelf>
-    <Shelf title="Songs"><TrackList :source="source" numbered /></Shelf>
+    <Shelf :title="t('Songs')"><TrackList :source="source" numbered /></Shelf>
   </template>
 </template>
