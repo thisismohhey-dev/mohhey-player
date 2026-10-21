@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { RouterLink, type RouteLocationRaw } from 'vue-router'
+import type { Component } from 'vue'
 import { Play } from 'lucide-vue-next'
 import Cover from './Cover.vue'
 
@@ -11,6 +12,7 @@ defineProps<{
   seed?: string
   round?: boolean
   kind?: 'track' | 'artist'
+  icon?: Component
   /** Up to four hashes for a mosaic cover (playlists). */
   mosaic?: string[]
   playLabel?: string
@@ -25,7 +27,7 @@ defineEmits<{ play: [] }>()
         <div v-if="mosaic && mosaic.length > 1" class="grid aspect-square grid-cols-2 gap-0.5 overflow-hidden rounded-xl shadow-card">
           <Cover v-for="(h, i) in mosaic.slice(0, 4)" :key="i" :hash="h" :seed="title + i" class="rounded-none" />
         </div>
-        <Cover v-else :hash="mosaic?.[0] ?? hash" :seed="seed ?? title" :round="round" :kind="kind" class="w-full shadow-card" />
+        <Cover v-else :hash="mosaic?.[0] ?? hash" :seed="seed ?? title" :round="round" :kind="kind" :icon="icon" class="w-full shadow-card" />
       </div>
       <div class="mt-3 min-w-0" :class="round && 'text-center'">
         <div dir="auto" class="truncate text-[15px] font-medium leading-tight">{{ title }}</div>
