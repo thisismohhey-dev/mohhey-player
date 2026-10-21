@@ -5,7 +5,7 @@ import { PlayQueue } from '@/lib/player/queue'
 const t = (id: number): Track => ({
   id, title: `T${id}`, artistId: null, artist: '', albumId: null, album: '', trackNo: null, discNo: null, year: null,
   durationMs: 1000, format: 'mp3', bitrate: null, fileName: `${id}.mp3`, artworkHash: null, favorite: false,
-  playCount: 0, lastPlayedAt: null, missing: false,
+  playCount: 0, lastPlayedAt: null, missing: false, resumeMs: 0, gainDb: null, edited: false,
 })
 const tracks = (n: number) => Array.from({ length: n }, (_, i) => t(i + 1))
 const ids = (q: PlayQueue) => q.entries.map((e) => e.track.id)
