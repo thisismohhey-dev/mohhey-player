@@ -1,6 +1,6 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { app, BrowserWindow, dialog, ipcMain, screen } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain, screen, shell } from 'electron'
 import type { TrayCommand, TrayLabels, WindowControl } from '@mohhey/contracts'
 import { startApi, type ApiHandle } from './api-process'
 import { findForbiddenSwitch, originOf } from './policy'
@@ -153,6 +153,12 @@ function registerIpc(): void {
   ipcMain.handle('api:get-config', (e) => {
     if (!isTrustedSender(e, allowedOrigin) || !api) throw new Error('Not available')
     return { baseUrl: api.baseUrl, token: api.token }
+  })
+  // The page can only pick a name; the URLs are fixed here, so it can never make the app open an arbitrary address.
+  const LINKS: Record<string, string> = { repo: 'https://github.com/thisismohhey-dev/mohhey-player', profile: 'https://github.com/thisismohhey-dev' }
+  ipcMain.on('app:open-link', (e, page: unknown) => {
+    if (!isTrustedSender(e, allowedOrigin) || typeof page !== 'string' || !Object.hasOwn(LINKS, page)) return
+    void shell.openExternal(LINKS[page]!)
   })
   ipcMain.handle('library:add-folder', async (e) => {
     if (!isTrustedSender(e, allowedOrigin) || !api) throw new Error('Not available')
