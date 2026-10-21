@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import {
   AlbumSchema, AppSettingsSchema, BrowseResultSchema, ArtistSchema, FolderSchema, Page, PlaylistSchema, ScanStatusSchema, SearchResultSchema, TrackSchema,
-  type Album, type AppSettings, type BrowseResult, type AppSettingsPatch, type Artist, type LibraryFolder, type Paged, type Playlist, type ScanStatus,
+  type Album, type PlaylistIcon, type AppSettings, type BrowseResult, type AppSettingsPatch, type Artist, type LibraryFolder, type Paged, type Playlist, type ScanStatus,
   type SearchResult, type Track, type TrackQuery,
 } from '@mohhey/contracts'
 
@@ -66,8 +66,8 @@ export const api = {
   playlists: {
     list: async (): Promise<Playlist[]> => (await request('/playlists', Items(PlaylistSchema))).items,
     get: (id: number): Promise<Playlist> => request(`/playlists/${id}`, PlaylistSchema),
-    create: (name: string): Promise<Playlist> => request('/playlists', PlaylistSchema, { method: 'POST', body: { name } }),
-    rename: (id: number, name: string): Promise<Playlist> => request(`/playlists/${id}`, PlaylistSchema, { method: 'PATCH', body: { name } }),
+    create: (name: string, icon?: PlaylistIcon): Promise<Playlist> => request('/playlists', PlaylistSchema, { method: 'POST', body: { name, icon } }),
+    update: (id: number, patch: { name?: string; icon?: PlaylistIcon }): Promise<Playlist> => request(`/playlists/${id}`, PlaylistSchema, { method: 'PATCH', body: patch }),
     remove: (id: number) => request(`/playlists/${id}`, Ok, { method: 'DELETE' }),
     tracks: async (id: number): Promise<Track[]> => (await request(`/playlists/${id}/tracks`, Page(TrackSchema))).items,
     addTracks: (id: number, trackIds: number[]): Promise<Playlist> => request(`/playlists/${id}/tracks`, PlaylistSchema, { method: 'POST', body: { trackIds } }),
