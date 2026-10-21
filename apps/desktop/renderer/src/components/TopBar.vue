@@ -10,7 +10,7 @@ const input = ref<HTMLInputElement>()
 const text = ref(typeof route.query.q === 'string' ? route.query.q : '')
 let timer: ReturnType<typeof setTimeout> | undefined
 
-watch(() => route.query.q, (q) => { if (route.name === 'search') text.value = typeof q === 'string' ? q : '' })
+watch(() => [route.name, route.query.q], () => { text.value = route.name === 'search' && typeof route.query.q === 'string' ? route.query.q : '' })
 
 function onInput(): void {
   clearTimeout(timer)
