@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { Component } from 'vue'
 import { artUrl } from '@/lib/api'
 import Cover from './Cover.vue'
 
@@ -10,6 +11,7 @@ defineProps<{
   seed?: string
   round?: boolean
   kind?: 'track' | 'artist'
+  icon?: Component
   mosaic?: string[]
 }>()
 </script>
@@ -23,7 +25,7 @@ defineProps<{
       <div v-if="mosaic && mosaic.length > 1" class="grid size-52 shrink-0 grid-cols-2 gap-0.5 overflow-hidden rounded-2xl shadow-float">
         <Cover v-for="(h, i) in mosaic.slice(0, 4)" :key="i" :hash="h" :seed="title + i" class="rounded-none" />
       </div>
-      <Cover v-else :hash="mosaic?.[0] ?? hash" :seed="seed ?? title" :round="round" :kind="kind" class="size-52 shrink-0 shadow-float" :class="round ? '' : 'rounded-2xl'" />
+      <Cover v-else :hash="mosaic?.[0] ?? hash" :seed="seed ?? title" :round="round" :kind="kind" :icon="icon" class="size-52 shrink-0 shadow-float" :class="round ? '' : 'rounded-2xl'" />
       <div class="min-w-0 pb-1">
         <div v-if="eyebrow" class="mb-3 text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{{ eyebrow }}</div>
         <h1 dir="auto" class="line-clamp-2 text-[clamp(2.5rem,5.5vw,5rem)] font-medium leading-[0.98]">{{ title }}</h1>
