@@ -160,7 +160,7 @@ const isCurrent = (id: number) => player.current?.id === id
               </button>
 
               <div class="flex min-w-0 items-center gap-3">
-                <Cover :hash="track.artworkHash" :seed="track.album || track.title" class="size-10 shrink-0 rounded-lg" />
+                <Cover :size="96" :hash="track.artworkHash" :seed="track.album || track.title" class="size-10 shrink-0 rounded-lg" />
                 <div class="min-w-0">
                   <div dir="auto" class="truncate text-[14px] font-medium leading-tight" :class="isCurrent(track.id) && 'text-brand'">{{ track.title }}</div>
                   <div dir="auto" class="truncate text-[13px] text-muted-foreground">{{ track.artist || t('Unknown artist') }}</div>

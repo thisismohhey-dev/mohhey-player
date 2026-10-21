@@ -55,3 +55,10 @@ describe('packaged-build switch guard', () => {
     for (const d of ["form-action 'none'", "frame-src 'none'", "worker-src 'none'", "object-src 'none'", "base-uri 'none'"]) expect(csp).toContain(d)
   })
 })
+
+test('artwork URLs accept only the known thumbnail widths', () => {
+  const h = 'a'.repeat(40)
+  expect(parseMediaUrl(`mohhey-media://art/${h}.jpg?s=256`)).toEqual({ kind: 'art', key: `${h}.jpg`, size: 256 })
+  expect(parseMediaUrl(`mohhey-media://art/${h}.jpg?s=9999`)).toEqual({ kind: 'art', key: `${h}.jpg` })
+  expect(parseMediaUrl(`mohhey-media://art/${h}.jpg?s=../../x`)).toEqual({ kind: 'art', key: `${h}.jpg` })
+})

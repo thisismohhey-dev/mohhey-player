@@ -60,7 +60,7 @@ function key(e: KeyboardEvent, pos: number): void {
         @dblclick="player.jumpTo(pos)" @keydown="key($event, pos)"
       >
         <GripVertical class="size-4 shrink-0 cursor-grab text-muted-foreground/60 opacity-0 group-hover:opacity-100" aria-hidden="true" />
-        <Cover :hash="entry.track.artworkHash" :seed="entry.track.album || entry.track.title" class="size-10 shrink-0 rounded-lg" />
+        <Cover :size="96" :hash="entry.track.artworkHash" :seed="entry.track.album || entry.track.title" class="size-10 shrink-0 rounded-lg" />
         <button class="min-w-0 flex-1 text-start" :aria-label="t('Play {title}', { title: entry.track.title })" @click="player.jumpTo(pos)">
           <div dir="auto" class="truncate text-[14px] font-medium" :class="pos === player.position && 'text-brand'">{{ entry.track.title }}</div>
           <div dir="auto" class="truncate text-[13px] text-muted-foreground">{{ entry.track.artist }}</div>

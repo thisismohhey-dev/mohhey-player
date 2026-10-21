@@ -10,7 +10,8 @@ const outfile = join(outDir, process.platform === 'win32' ? 'mohhey-api.exe' : '
 
 const result = await Bun.build({
   entrypoints: [join(root, 'apps/api/src/main.ts')],
-  compile: { outfile },
+  // --smol makes the embedded runtime trade a little speed for a noticeably smaller heap.
+  compile: { outfile, execArgv: ['--smol'] },
   minify: true,
 })
 if (!result.success) {

@@ -6,11 +6,11 @@ import { artUrl } from '@/lib/api'
 import { hueFor } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
-const props = defineProps<{ hash?: string | null; seed?: string; round?: boolean; kind?: 'track' | 'artist'; icon?: Component; class?: string }>()
+const props = defineProps<{ hash?: string | null; seed?: string; round?: boolean; kind?: 'track' | 'artist'; icon?: Component; class?: string; size?: 96 | 256 | 512 }>()
 const failed = ref(false)
 watch(() => props.hash, () => { failed.value = false })
 
-const src = computed(() => (failed.value ? null : artUrl(props.hash)))
+const src = computed(() => (failed.value ? null : artUrl(props.hash, props.size ?? 256)))
 const hue = computed(() => hueFor(props.seed ?? ''))
 const bg = computed(() => `linear-gradient(135deg, hsl(${hue.value} 28% 78%), hsl(${(hue.value + 40) % 360} 32% 66%))`)
 </script>

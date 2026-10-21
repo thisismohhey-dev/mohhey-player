@@ -8,6 +8,7 @@ import { usePlayerStore } from '@/stores/player'
 import EmptyState from '@/components/EmptyState.vue'
 import ErrorState from '@/components/ErrorState.vue'
 import MediaCard from '@/components/MediaCard.vue'
+import VirtualGrid from '@/components/VirtualGrid.vue'
 
 const player = usePlayerStore()
 const { data, loading, error, reload } = useLoader(() => api.albums.list(undefined, 500))
@@ -24,10 +25,12 @@ async function play(id: number): Promise<void> {
   <ErrorState v-if="error" :message="error" @retry="reload" />
   <div v-else-if="loading" class="grid grid-cols-[repeat(auto-fill,minmax(168px,1fr))] gap-4 px-8" aria-busy="true"><div v-for="i in 10" :key="i" class="aspect-square animate-pulse rounded-2xl bg-foreground/6" /></div>
   <EmptyState v-else-if="!data?.items.length" :icon="Disc3" :title="t('No albums yet')" :body="t('Albums appear once your songs have album tags.')" />
-  <div v-else class="grid grid-cols-[repeat(auto-fill,minmax(168px,1fr))] gap-x-2 gap-y-3 px-6">
-    <MediaCard
-      v-for="a in data.items" :key="a.id" :to="{ name: 'album', params: { id: a.id } }" :title="a.title"
+  <VirtualGrid v-else :items="data.items" :key-of="(a) => a.id">
+    <template #default="{ item: a }">
+      <MediaCard
+        :key="a.id" :to="{ name: 'album', params: { id: a.id } }" :title="a.title"
       :subtitle="[a.artist, a.year].filter(Boolean).join(' · ') || t('Unknown artist')" :hash="a.artworkHash" :play-label="t('Play {title}', { title: a.title })" @play="play(a.id)"
-    />
-  </div>
+      />
+    </template>
+  </VirtualGrid>
 </template>

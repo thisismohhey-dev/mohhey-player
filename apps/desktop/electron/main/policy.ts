@@ -27,13 +27,22 @@ export function isTrustedUrl(url: string | undefined, allowedOrigin: string): bo
   return !!url && originOf(url) === allowedOrigin
 }
 
-/** `mohhey-media://track/<id>` or `mohhey-media://art/<sha1>.<ext>`; anything else is rejected. */
-export function parseMediaUrl(raw: string): { kind: 'track' | 'art'; key: string } | null {
+/** Thumbnail widths the renderer may ask for (`?s=`); anything else gets the original image. */
+export const ART_SIZES: readonly number[] = [96, 256, 512]
+
+/**
+ * `mohhey-media://track/<id>` or `mohhey-media://art/<sha1>.<ext>[?s=<width>]`; anything else is rejected.
+ * `size` is only set for an allowed thumbnail width.
+ */
+export function parseMediaUrl(raw: string): { kind: 'track' | 'art'; key: string; size?: number } | null {
   let url: URL
   try { url = new URL(raw) } catch { return null }
   const key = decodeURIComponent(url.pathname.slice(1))
   if (url.hostname === 'track' && /^\d+$/.test(key)) return { kind: 'track', key }
-  if (url.hostname === 'art' && /^[a-f0-9]{40}\.(jpg|png)$/.test(key)) return { kind: 'art', key }
+  if (url.hostname === 'art' && /^[a-f0-9]{40}\.(jpg|png)$/.test(key)) {
+    const s = Number(url.searchParams.get('s'))
+    return ART_SIZES.includes(s) ? { kind: 'art', key, size: s } : { kind: 'art', key }
+  }
   return null
 }
 

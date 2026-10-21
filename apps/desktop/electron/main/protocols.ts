@@ -1,8 +1,8 @@
 import { createReadStream } from 'node:fs'
-import { readFile, stat } from 'node:fs/promises'
+import { mkdir, readFile, stat, writeFile } from 'node:fs/promises'
 import { extname, join, normalize, sep } from 'node:path'
 import { Readable } from 'node:stream'
-import { protocol } from 'electron'
+import { app, nativeImage, protocol } from 'electron'
 import type { ApiHandle } from './api-process'
 import { audioMime, parseMediaUrl, parseRange } from './policy'
 
@@ -66,6 +66,24 @@ async function serveAudioFile(path: string, rangeHeader: string | null): Promise
 }
 
 /**
+ * Covers are stored full size (often 1000+ px), but a grid cell shows ~200 px. Decoding the originals for every visible cell is what
+ * made the app use hundreds of MB, so the renderer asks for a thumbnail (`?s=256`). Thumbnails are made once, kept on disk, and served
+ * from there afterwards.
+ */
+async function thumbnail(key: string, size: number, original: Response): Promise<Response> {
+  const dir = join(app.getPath('userData'), 'thumbs')
+  const file = join(dir, `${key.replace(/\.\w+$/, '')}-${size}.jpg`)
+  const headers = { 'content-type': 'image/jpeg', 'cache-control': 'public, max-age=31536000, immutable' }
+  try { return new Response(new Uint8Array(await readFile(file)), { headers }) } catch { /* not made yet */ }
+  const image = nativeImage.createFromBuffer(Buffer.from(await original.arrayBuffer()))
+  if (image.isEmpty()) return new Response('Bad image', { status: 422 })
+  const { width } = image.getSize()
+  const jpeg = (width > size ? image.resize({ width: size, quality: 'good' }) : image).toJPEG(82)
+  await mkdir(dir, { recursive: true }).then(() => writeFile(file, jpeg)).catch(() => undefined)
+  return new Response(new Uint8Array(jpeg), { headers })
+}
+
+/**
  * `mohhey-media://track/<id>` streams a local audio file (Range requests honoured, see serveAudioFile);
  * `mohhey-media://art/<hash.ext>` serves cached artwork. The renderer never sees file paths.
  */
@@ -82,8 +100,11 @@ export function handleMediaProtocol(api: ApiHandle): void {
         const { path } = (await res.json()) as { path: string }
         return await serveAudioFile(path, request.headers.get('range'))
       }
-      return await fetch(`${api.baseUrl}/artwork/${target.key}`, { headers: auth })
-    } catch {
+      const art = await fetch(`${api.baseUrl}/artwork/${target.key}`, { headers: auth })
+      if (!target.size || !art.ok) return art
+      return await thumbnail(target.key, target.size, art)
+    } catch (e) {
+      console.error('[media]', request.url, e instanceof Error ? e.message : e)
       return new Response('Unavailable', { status: 502 })
     }
   })

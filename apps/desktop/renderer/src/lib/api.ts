@@ -100,4 +100,5 @@ export const api = {
 }
 
 export const trackUrl = (id: number) => `mohhey-media://track/${id}`
-export const artUrl = (hash: string | null | undefined) => (hash ? `mohhey-media://art/${hash}` : null)
+/** Cover URL. `size` asks the main process for a thumbnail (96, 256 or 512 px wide) so small cells never decode the full image. */
+export const artUrl = (hash: string | null | undefined, size?: 96 | 256 | 512) => (hash ? `mohhey-media://art/${hash}${size ? `?s=${size}` : ''}` : null)

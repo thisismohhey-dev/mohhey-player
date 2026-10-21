@@ -34,7 +34,7 @@ const hint = (g: DuplicateGroup) =>
       </header>
       <ul class="divide-y">
         <li v-for="tr in g.tracks" :key="tr.id" class="flex items-center gap-3 px-5 py-3">
-          <Cover :hash="tr.artworkHash" :seed="tr.album || tr.title" class="size-10 shrink-0 rounded-lg" />
+          <Cover :size="96" :hash="tr.artworkHash" :seed="tr.album || tr.title" class="size-10 shrink-0 rounded-lg" />
           <div class="min-w-0 flex-1">
             <div dir="auto" class="truncate text-[14px] font-medium">{{ tr.title }}</div>
             <div dir="ltr" class="truncate text-start text-[12px] text-muted-foreground" :title="tr.folder">{{ tr.folder }}</div>

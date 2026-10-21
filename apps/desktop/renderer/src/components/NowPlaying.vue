@@ -19,7 +19,7 @@ const player = usePlayerStore()
 const ui = useUiStore()
 const lyricsOpen = ref(false)
 const track = computed(() => player.current)
-const bg = computed(() => artUrl(track.value?.artworkHash))
+const bg = computed(() => artUrl(track.value?.artworkHash, 96))
 const hue = computed(() => hueFor(track.value?.album || track.value?.title || ''))
 
 function onKey(e: KeyboardEvent): void { if (e.key === 'Escape') ui.nowPlayingOpen = false }
@@ -45,7 +45,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
         <!-- Always a true square: the size comes from the free height, never from the flex container (which used to squash it). -->
         <LyricsPanel v-if="lyricsOpen" class="h-[clamp(140px,calc(100vh-390px),440px)] w-[clamp(240px,calc(100vh-390px),520px)] max-w-full shrink-0" />
         <Cover
-          v-else :hash="track.artworkHash" :seed="track.album || track.title"
+          v-else :hash="track.artworkHash" :size="512" :seed="track.album || track.title"
           class="size-[clamp(140px,calc(100vh-390px),440px)] shrink-0 rounded-[28px] shadow-[0_40px_80px_-24px_rgb(0_0_0/0.65)]"
         />
         <div class="flex w-full items-center gap-4">
