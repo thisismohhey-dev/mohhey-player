@@ -107,6 +107,12 @@ install → finish. It installs into `C:Program FilesM. Player` (64-bit; Windows
 `node scripts/checksums.mjs` writes `dist/SHA256SUMS.txt`. The installer is
 unsigned, so Windows SmartScreen will warn until it is code-signed. No auto-update is configured on purpose.
 
+## Versions
+Semantic versioning; see [CHANGELOG.md](CHANGELOG.md). `bun scripts/bump-version.mjs patch|minor|major` updates every package, the version is shown in Settings → About, and each release is a `vX.Y.Z` tag with the installer attached on GitHub.
+
+## Opening files and duplicates
+Double-clicking an audio file (once M. Player is chosen as the app for that type in Windows) plays it without adding it to the library. Duplicate songs — the same file in two places, or the same song ripped twice (same title / artist / album / length) — are hidden from every list; the copy with favourites / plays / the best bitrate stays, and the Duplicates page still shows them. Nothing is deleted.
+
 ## Smooth transitions
 Skipping to the next/previous track (or picking another one) fades the current sound out (~0.2 s) and the new one in (~0.4 s) instead of cutting it off;
 pause and resume have a short fade too. Pressing next several times skips several tracks and fades only once.

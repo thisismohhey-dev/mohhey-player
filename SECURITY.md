@@ -11,6 +11,7 @@ what protects it and how each point was checked.
 | IPC | Small, validated surface; every call checks the sender's origin (`mohhey-app://renderer` or the dev server) |
 | Local API | Child process on `127.0.0.1` (random port), `Host` must be loopback (anti DNS-rebinding), per-launch bearer token, CORS only for the app origins |
 | Privileged routes | A second per-launch secret known only to the main process guards file paths and *adding library folders*; the renderer can only add a folder through the native dialog |
+| OS file open | Files opened with the app (double-click) reach the library service only through an internal-token route; it accepts absolute paths with a known audio extension, nothing else, and keeps such files out of the library lists |
 | Files | Music is only read, never modified or deleted; browsing is restricted to library folders; media is served through `mohhey-media://` with its own Range handling |
 | Secrets | Tokens are random per launch, compared in constant time, never logged, never given to the renderer (internal one) |
 | Packaged build | Electron fuses: no `RunAsNode`, no `NODE_OPTIONS`, no `--inspect`; app loads only from the integrity-checked `app.asar`; debug switches (`--remote-debugging-port`, …) are refused at startup |
