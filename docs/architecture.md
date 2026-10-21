@@ -25,3 +25,13 @@ packages/contracts/     Zod schemas + TS types shared by API and renderer, and t
 - **Lists:** `usePagedTracks` fetches 100-row pages on demand; `TrackList` virtualises rows (TanStack Virtual).
 - **Queue/settings persistence:** debounced `PATCH /settings` (queue ids, index, position, volume, shuffle, repeat).
 - **History:** a play is counted after 30 s or 50 % of the track, and only when "Keep play history" is on.
+
+## Audio engine (renderer)
+`lib/player/engine.ts` drives **two** `<audio>` decks. One is active; the other preloads the next track (gapless) or overlaps it with the
+ending one (crossfade, equal-power curves). Both feed one Web Audio graph (`graph.ts`):
+deck gain (crossfade × loudness correction) → 10-band EQ → soft limiter → master (volume, skip/pause fades). An analyser taps the raw signal,
+which the player store uses to learn a loudness correction for tracks without ReplayGain tags. The media scheme answers with CORS headers
+and is registered `corsEnabled`, because Web Audio outputs silence for media it is not allowed to read.
+
+Per-track state kept in SQLite: resume position (tracks ≥ 10 min), gain (dB), content hash (size + first/last 64 KB) for duplicate detection,
+and a `meta_locked` flag for user edits. Migration 3 forces one full re-read of tags on the next scan.
