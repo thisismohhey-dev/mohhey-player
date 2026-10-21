@@ -13,7 +13,7 @@ const side = 'grid place-items-center rounded-full text-muted-foreground transit
 </script>
 
 <template>
-  <div class="flex items-center justify-center" :class="size === 'lg' ? 'gap-5' : 'gap-3'">
+  <div dir="ltr" class="flex items-center justify-center" :class="size === 'lg' ? 'gap-5' : 'gap-3'">
     <button :class="cn(side, 'size-9', player.shuffle && 'text-brand hover:text-brand')" :aria-label="t('player.shuffle')" :aria-pressed="player.shuffle" :title="t('player.shuffle')" @click="player.toggleShuffle()">
       <Shuffle class="size-[18px]" />
     </button>
