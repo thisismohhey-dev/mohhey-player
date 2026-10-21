@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import BrandMark from '@/components/BrandMark.vue'
 import { FolderOpen, LockKeyhole, Search, Sparkles } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { t } from '@/lib/i18n'
@@ -17,7 +18,7 @@ const points = [
     <div class="drag h-[var(--titlebar-h)] shrink-0" />
     <div class="pointer-events-none absolute -end-40 top-10 size-[620px] rounded-full bg-brand/15 blur-3xl" aria-hidden="true" />
     <div class="relative mx-auto flex w-full max-w-5xl flex-1 flex-col justify-center px-10 pb-16">
-      <div dir="ltr" class="font-display text-xl font-bold tracking-tight">Mohhey<span class="text-brand">.</span></div>
+      <BrandMark :size="44" />
       <h1 class="mt-10 max-w-3xl text-[clamp(3rem,7vw,5.5rem)] font-medium leading-[0.95]">{{ t('empty.libraryTitle') }}</h1>
       <p class="mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground">{{ t('empty.libraryBody') }}</p>
       <div class="mt-10 flex items-center gap-5">
