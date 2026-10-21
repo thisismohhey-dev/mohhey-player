@@ -275,7 +275,13 @@ export class AudioEngine {
     })
   }
 
-  async play(): Promise<void> {
+  /**
+   * Starts the active deck. The master fade gain is reset to full unless `keepGain` is set (resume fades up from silence):
+   * after a pause the gain deliberately stays at 0, because the element still flushes a few ms of buffered audio
+   * and restoring the gain at that moment is audible as a click.
+   */
+  async play(keepGain = false): Promise<void> {
+    if (!keepGain) this.setGain(1)
     try {
       await this.graph?.resume()
       await this.deck.audio.play()
@@ -287,6 +293,7 @@ export class AudioEngine {
     }
   }
 
+  /** Pauses both decks. Call after fading to silence; the fade gain is left at 0 on purpose (see play()). */
   pause(): void { for (const d of this.decks) d.audio.pause() }
 
   seek(ms: number): void {

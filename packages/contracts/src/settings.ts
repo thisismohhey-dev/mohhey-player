@@ -50,7 +50,7 @@ export const AppSettingsSchema = z.object({
   queue: fields.queue.default({ trackIds: [], index: -1, positionMs: 0 }),
   playbackRate: fields.playbackRate.default(1),
   normalize: fields.normalize.default(false),
-  crossfadeSec: fields.crossfadeSec.default(0),
+  crossfadeSec: fields.crossfadeSec.default(3),
   gapless: fields.gapless.default(true),
   eq: fields.eq.default(FLAT_EQ),
 })

@@ -9,8 +9,6 @@ import { PlayQueue } from '@/lib/player/queue'
 import { useUiStore } from './ui'
 
 const HISTORY_MIN_MS = 30_000
-const FADE_OUT_MS = 220
-const FADE_IN_MS = 380
 const PAUSE_FADE_MS = 140
 const RESUME_FADE_MS = 200
 const SLEEP_FADE_MS = 4000
@@ -157,20 +155,13 @@ export const usePlayerStore = defineStore('player', () => {
   }
 
   /**
-   * Changes track without an abrupt cut: fade the current sound out, switch, then fade the new track in.
-   * Rapid presses are safe: only the most recent switch completes.
+   * Manual track changes (next, previous, picking a song) switch immediately; only play/pause and the automatic
+   * end-of-track transition (crossfade/gapless) are faded. Bumping switchId cancels a pause fade that is still running.
    */
   let switchId = 0
-  async function withFade(change: () => void): Promise<void> {
-    const mine = ++switchId
-    if (engine.isAudible) {
-      await engine.fade(0, FADE_OUT_MS)
-      if (mine !== switchId) return
-    }
+  function switchNow(change: () => void): void {
+    switchId++
     change()
-    if (engine.isPaused && !engine.hasSource) { engine.setGain(1); return }
-    engine.setGain(0)
-    void engine.fade(1, FADE_IN_MS)
   }
 
   function onEnded(): void {
@@ -232,22 +223,21 @@ export const usePlayerStore = defineStore('player', () => {
     if (!tracks.length) return
     queue.set(tracks, startIndex)
     syncCurrent()
-    void withFade(() => loadCurrent(true))
+    switchNow(() => loadCurrent(true))
   }
 
   async function togglePlay(): Promise<void> {
     if (!current.value) return
     if (status.value === 'error') { loadCurrent(true); return }
     if (engine.isPaused) {
-      if (!engine.hasSource) loadCurrent(true, positionMs.value)
-      else { engine.setGain(0); await engine.play().catch(() => undefined); void engine.fade(1, RESUME_FADE_MS) }
+      if (!engine.hasSource) { loadCurrent(true, positionMs.value); engine.setGain(0); void engine.fade(1, RESUME_FADE_MS) }
+      else { engine.setGain(0); await engine.play(true).catch(() => undefined); void engine.fade(1, RESUME_FADE_MS) }
     } else {
       // Short fade so pausing doesn't click.
       const mine = ++switchId
       await engine.fade(0, PAUSE_FADE_MS)
       if (mine !== switchId) return
-      engine.pause()
-      engine.setGain(1)
+      engine.pause() // gain stays at 0 until the next play, otherwise the decoder's last buffered samples click
     }
   }
 
@@ -257,7 +247,7 @@ export const usePlayerStore = defineStore('player', () => {
     const step = queue.next(false)
     if (step.kind === 'end') return
     syncCurrent()
-    void withFade(() => loadCurrent(true))
+    switchNow(() => loadCurrent(true))
   }
 
   function previous(): void {
@@ -272,7 +262,7 @@ export const usePlayerStore = defineStore('player', () => {
       return
     }
     syncCurrent()
-    void withFade(() => loadCurrent(true))
+    switchNow(() => loadCurrent(true))
   }
 
   function seek(ms: number): void { engine.seek(ms); positionMs.value = ms }
@@ -352,9 +342,8 @@ export const usePlayerStore = defineStore('player', () => {
       const mine = ++switchId
       await engine.fade(0, SLEEP_FADE_MS)
       if (mine !== switchId) { engine.setGain(1); return }
-      engine.pause()
+      engine.pause() // gain stays at 0 so the buffered tail cannot click; the next play() restores it
     }
-    engine.setGain(1)
     ui.toast(t('Sleep timer: playback stopped'))
   }
 
@@ -372,7 +361,7 @@ export const usePlayerStore = defineStore('player', () => {
   }
 
   // ── queue management ───────────────────────────────────────
-  function jumpTo(pos: number): void { if (queue.jumpTo(pos)) { syncCurrent(); void withFade(() => loadCurrent(true)) } }
+  function jumpTo(pos: number): void { if (queue.jumpTo(pos)) { syncCurrent(); switchNow(() => loadCurrent(true)) } }
 
   function enqueue(tracks: Track[], where: 'next' | 'end'): void {
     const wasEmpty = queue.length === 0
