@@ -32,43 +32,33 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
     </div>
     <div class="absolute inset-0 bg-black/45" aria-hidden="true" />
 
-    <!-- The player itself is a square card centred over the artwork wash; everything inside scales with the card (cqw units). -->
-    <div class="relative grid h-full place-items-center px-4 pb-4 pt-[calc(var(--titlebar-h)+4px)]">
-      <div
-        v-if="track"
-        class="@container relative aspect-square overflow-hidden rounded-[36px] border border-white/15 bg-black/25 shadow-[0_40px_90px_-30px_rgb(0_0_0/0.7)] backdrop-blur-2xl"
-        style="width: min(calc(100vh - var(--titlebar-h) - 28px), calc(100vw - 32px), 660px)"
-      >
-        <!-- cqw units resolve against the nearest *ancestor* container, so the padding lives on this inner box -->
-        <div class="flex h-full flex-col items-center justify-between" style="padding: 5.5cqw">
-        <button
-          class="absolute start-3 top-3 z-10 grid size-9 place-items-center rounded-full bg-white/12 backdrop-blur hover:bg-white/20"
-          :aria-label="t('Close now playing')" data-action="now-playing-close" @click="ui.nowPlayingOpen = false"
-        ><ChevronDown class="size-5" /></button>
+    <div class="relative flex h-full flex-col px-8 pb-6 pt-[calc(var(--titlebar-h)+4px)] text-foreground">
+      <button class="grid size-10 place-items-center self-start rounded-full bg-white/12 backdrop-blur hover:bg-white/20" :aria-label="t('Close now playing')" data-action="now-playing-close" @click="ui.nowPlayingOpen = false">
+        <ChevronDown class="size-5" />
+      </button>
 
+      <div v-if="track" class="mx-auto flex min-h-0 w-full max-w-[520px] flex-1 flex-col items-center justify-center gap-[clamp(10px,2.4vh,24px)]">
+        <!-- Always a true square: the size comes from the free height, never from the flex container (which used to squash it). -->
         <Cover
           :hash="track.artworkHash" :seed="track.album || track.title"
-          class="w-[42cqw] shrink-0 rounded-[clamp(16px,4cqw,28px)] shadow-[0_24px_48px_-16px_rgb(0_0_0/0.65)]"
+          class="size-[clamp(140px,calc(100vh-390px),440px)] shrink-0 rounded-[28px] shadow-[0_40px_80px_-24px_rgb(0_0_0/0.65)]"
         />
-
         <div class="flex w-full items-center gap-4">
           <div class="min-w-0 flex-1">
-            <h2 dir="auto" class="truncate font-display text-[clamp(1.25rem,5.2cqw,2.1rem)] font-medium leading-[1.15] tracking-[-0.01em]">{{ track.title }}</h2>
-            <p dir="auto" class="mt-0.5 truncate text-[clamp(0.85rem,2.6cqw,1.1rem)] font-medium text-white/80">{{ track.artist || t('Unknown artist') }}</p>
-            <p v-if="track.album" dir="auto" class="truncate text-[clamp(0.75rem,2.2cqw,0.95rem)] text-white/55">{{ track.album }}</p>
+            <h2 dir="auto" class="truncate font-display text-[clamp(1.5rem,4.2vh,2.2rem)] font-medium leading-[1.15] tracking-[-0.01em]">{{ track.title }}</h2>
+            <p dir="auto" class="mt-1 truncate text-[clamp(0.9rem,2vh,1.1rem)] font-medium text-white/80">{{ track.artist || t('Unknown artist') }}</p>
+            <p v-if="track.album" dir="auto" class="truncate text-[clamp(0.8rem,1.8vh,0.95rem)] text-white/55">{{ track.album }}</p>
           </div>
           <button
             :class="cn('grid size-11 shrink-0 place-items-center rounded-full bg-white/12 backdrop-blur transition-colors hover:bg-white/22', track.favorite && 'text-[#ff7a4d]')"
             :aria-label="track.favorite ? t('player.unfavorite') : t('player.favorite')" :aria-pressed="track.favorite" @click="player.toggleFavorite(track)"
           ><Heart class="size-5" :class="track.favorite && 'fill-current'" /></button>
         </div>
-
         <div class="w-full"><SeekBar /></div>
         <TransportControls size="lg" />
-        <div class="@max-[500px]:hidden"><VolumeControl /></div>
-        </div>
+        <div class="[@media(max-height:640px)]:hidden"><VolumeControl /></div>
       </div>
-      <p v-else class="text-white/70">{{ t('player.nothingPlaying') }}</p>
+      <p v-else class="m-auto text-white/70">{{ t('player.nothingPlaying') }}</p>
     </div>
   </section>
 </template>
