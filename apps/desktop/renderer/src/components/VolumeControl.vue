@@ -5,6 +5,7 @@ import { t } from '@/lib/i18n'
 import { usePlayerStore } from '@/stores/player'
 import Scrubber from './Scrubber.vue'
 
+defineProps<{ compact?: boolean }>()
 const player = usePlayerStore()
 const shownVolume = computed(() => (player.muted ? 0 : player.volume))
 const Icon = computed(() => (shownVolume.value === 0 ? VolumeX : shownVolume.value < 0.5 ? Volume1 : Volume2))
@@ -18,7 +19,7 @@ const Icon = computed(() => (shownVolume.value === 0 ? VolumeX : shownVolume.val
       @click="player.toggleMute()"
     ><component :is="Icon" class="size-[18px]" /></button>
     <Scrubber
-      class="w-24" size="sm" :value="shownVolume" :label="t('player.volume')" :value-text="`${Math.round(shownVolume * 100)}%`" :step="0.05"
+      :class="compact ? 'w-16' : 'w-24'" size="sm" :value="shownVolume" :label="t('player.volume')" :value-text="`${Math.round(shownVolume * 100)}%`" :step="0.05"
       @input="player.setVolume($event)"
     />
   </div>
