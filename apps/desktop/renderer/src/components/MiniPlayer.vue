@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { Heart, Loader2, Maximize2, Pause, Play, SkipBack, SkipForward } from 'lucide-vue-next'
+import { Heart, Loader2, Maximize2, Pause, Play, SkipBack, SkipForward, X } from 'lucide-vue-next'
+import type { WindowControl } from '@mohhey/contracts'
 import { t } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import { usePlayerStore } from '@/stores/player'
@@ -12,6 +13,7 @@ const player = usePlayerStore()
 const ui = useUiStore()
 const busy = computed(() => (player.status === 'loading' || player.status === 'buffering') && !player.isPlaying)
 const btn = 'no-drag grid place-items-center rounded-full text-muted-foreground transition-colors hover:text-foreground disabled:pointer-events-none disabled:opacity-35'
+const control = (action: WindowControl) => window.mohhey.windowControl(action)
 </script>
 
 <template>
@@ -19,12 +21,18 @@ const btn = 'no-drag grid place-items-center rounded-full text-muted-foreground 
     <Cover :hash="player.current?.artworkHash" :seed="player.current?.album || player.current?.title" class="size-[92px] shrink-0 rounded-xl shadow-card" />
 
     <div class="flex min-w-0 flex-1 flex-col justify-between self-stretch py-2.5">
-      <!-- leave room on the right for the native window buttons -->
-      <div class="min-w-0 pr-[calc(100vw-env(titlebar-area-x,0px)-env(titlebar-area-width,100vw))]">
-        <div v-if="player.current" dir="auto" class="truncate text-[15px] font-medium leading-tight" :title="player.current.title">{{ player.current.title }}</div>
-        <div v-else class="text-[14px] text-muted-foreground">{{ t('player.nothingPlaying') }}</div>
-        <div v-if="player.errorMessage" class="truncate text-xs text-destructive" role="alert">{{ player.errorMessage }}</div>
-        <div v-else-if="player.current" dir="auto" class="truncate text-[13px] text-muted-foreground">{{ player.current.artist || t('Unknown artist') }}</div>
+      <div class="flex items-start gap-2">
+        <div class="min-w-0 flex-1">
+          <div v-if="player.current" dir="auto" class="truncate text-[15px] font-medium leading-tight" :title="player.current.title">{{ player.current.title }}</div>
+          <div v-else class="text-[14px] text-muted-foreground">{{ t('player.nothingPlaying') }}</div>
+          <div v-if="player.errorMessage" class="truncate text-xs text-destructive" role="alert">{{ player.errorMessage }}</div>
+          <div v-else-if="player.current" dir="auto" class="truncate text-[13px] text-muted-foreground">{{ player.current.artist || t('Unknown artist') }}</div>
+        </div>
+        <!-- small custom window buttons (the OS ones are not used in this window) -->
+        <div dir="ltr" class="no-drag -mr-1 -mt-1 flex shrink-0 items-center gap-0.5">
+          <button :class="cn(btn, 'size-6 hover:bg-foreground/8')" :aria-label="t('Back to full player')" :title="t('Back to full player')" data-action="mini-exit" @click="ui.setMiniMode(false)"><Maximize2 class="size-3.5" :stroke-width="1.8" /></button>
+          <button :class="cn(btn, 'size-6 hover:bg-destructive/12 hover:text-destructive')" :aria-label="t('Close')" :title="t('Close')" @click="control('close')"><X class="size-3.5" :stroke-width="1.8" /></button>
+        </div>
       </div>
 
       <div class="space-y-0.5">
@@ -41,8 +49,6 @@ const btn = 'no-drag grid place-items-center rounded-full text-muted-foreground 
             v-if="player.current" :class="cn(btn, 'size-8', player.current.favorite && 'text-brand hover:text-brand')"
             :aria-label="player.current.favorite ? t('player.unfavorite') : t('player.favorite')" :aria-pressed="player.current.favorite" @click="player.toggleFavorite(player.current)"
           ><Heart class="size-4" :class="player.current.favorite && 'fill-current'" /></button>
-          <span class="flex-1" />
-          <button :class="cn(btn, 'size-8')" :aria-label="t('Back to full player')" :title="t('Back to full player')" data-action="mini-exit" @click="ui.setMiniMode(false)"><Maximize2 class="size-4" /></button>
         </div>
         <div class="no-drag"><SeekBar /></div>
       </div>
