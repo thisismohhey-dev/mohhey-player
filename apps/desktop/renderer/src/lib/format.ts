@@ -31,7 +31,7 @@ export const plural = (n: number, one: string, many = `${one}s`) => {
 
 export function greeting(date = new Date()): string {
   const h = date.getHours()
-  if (locale.value === 'fa') return h < 5 ? 'هنوز بیداری؟' : h < 12 ? 'صبح بخیر' : h < 18 ? 'عصر بخیر' : 'شب بخیر'
+  if (locale.value === 'fa') return h < 5 ? 'هنوز بیداری؟' : h < 12 ? 'صبح بخیر' : h < 17 ? 'بعدازظهر بخیر' : h < 20 ? 'عصر بخیر' : 'شب بخیر'
   if (h < 5) return 'Still up?'
   if (h < 12) return 'Good morning'
   if (h < 18) return 'Good afternoon'
