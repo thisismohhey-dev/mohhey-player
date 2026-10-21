@@ -41,11 +41,26 @@ seek bar deliberately stay left-to-right, as on every media player.
 
 ### Mini player
 Always-on-top, stays above every other window so you can control playback without switching apps
-(`Ctrl+Shift+M`, or the mini-player button next to the queue).
+(`Ctrl+Shift+M`, or the mini-player button next to the queue). While it is active the full player leaves the taskbar and
+lives in the **system tray** next to the clock: click the tray icon to bring it back, or right-click for previous / play / next.
 
 <img src="docs/screenshots/mini.png" alt="Mini player" width="440">
 
+### Small touches
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/sidebar-collapsed.png" alt="Collapsed sidebar"><br><sub>Collapsible sidebar (`Ctrl+B`), icons only. Search is an icon until you click it (`Ctrl+K`).</sub></td>
+    <td width="50%"><img src="docs/screenshots/playlist-dialog.png" alt="Playlist dialog"><br><sub>Playlists have an icon, can be edited from the sidebar (hover or right-click) and deleted.</sub></td>
+  </tr>
+</table>
+
+<img src="docs/screenshots/app-icon.png" alt="App icon" width="96"> App icon source: `apps/desktop/resources/icon.svg` (regenerate PNG/ICO with `bun scripts/make-icons.mjs`).
+
 <sub>Screenshots use a small fictional library generated for the demo.</sub>
+
+## Audio formats
+MP3, **FLAC**, OGG/Opus, WAV, M4A/AAC and WebM audio: the formats Chromium can decode. FLAC was verified on real files from a library
+(duration, tags, playback and seeking). Files are streamed with HTTP Range support, so seeking works on large files too.
 
 ## Requirements
 Bun ≥ 1.2 on Windows, macOS or Linux.
