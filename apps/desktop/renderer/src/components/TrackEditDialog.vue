@@ -68,7 +68,7 @@ const reset = () => {
           <label class="block text-sm font-medium">{{ t('Album') }}<Input v-model="album" dir="auto" class="mt-1.5 h-10 rounded-xl" maxlength="300" /></label>
         </div>
         <p class="mt-4 flex gap-2 rounded-xl bg-foreground/[0.05] p-3 text-[13px] leading-relaxed text-muted-foreground">
-          <Info class="mt-0.5 size-4 shrink-0" />{{ t('Changes are saved in Mohhey only. Your audio file is not modified.') }}
+          <Info class="mt-0.5 size-4 shrink-0" />{{ t('Changes are saved in M. Player only. Your audio file is not modified.') }}
         </p>
         <DialogFooter class="mt-5 sm:justify-between">
           <Button v-if="trackBeingEdited?.edited" type="button" variant="ghost" class="rounded-full text-muted-foreground" :disabled="busy" @click="reset">{{ t('Restore original tags') }}</Button>

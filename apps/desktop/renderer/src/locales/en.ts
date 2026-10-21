@@ -1,6 +1,6 @@
 /** All user-facing copy lives here so it can be translated (and RTL locales added) without touching components. */
 export const en = {
-  appName: 'Mohhey',
+  appName: 'M. Player',
   nav: {
     home: 'Home', songs: 'Songs', folders: 'Folders', albums: 'Albums', artists: 'Artists', favorites: 'Favorites',
     playlists: 'Playlists', search: 'Search', settings: 'Settings', library: 'Library', newPlaylist: 'New playlist',
@@ -13,7 +13,7 @@ export const en = {
   },
   empty: {
     libraryTitle: 'Bring your music home',
-    libraryBody: 'Choose a folder and Mohhey will read your tracks, artwork and albums. Nothing leaves your computer.',
+    libraryBody: 'Choose a folder and M. Player will read your tracks, artwork and albums. Nothing leaves your computer.',
     chooseFolder: 'Choose a folder',
     songsTitle: 'No songs here yet', songsBody: 'Add a music folder to fill your library.',
     favoritesTitle: 'No favorites yet', favoritesBody: 'Tap the heart on any song and it will appear here.',

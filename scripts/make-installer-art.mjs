@@ -24,7 +24,7 @@ const sidebar = (version) => `<svg xmlns="http://www.w3.org/2000/svg" width="164
   <circle cx="150" cy="10" r="150" fill="url(#warm)"/>
   <circle cx="-10" cy="320" r="150" fill="url(#cool)"/>
   <g transform="translate(-2.5 -1.4) scale(0.3)">${MARK}</g>
-  <text x="26" y="176" font-family="PP Neue Montreal" font-weight="700" font-size="25" fill="#171614" letter-spacing="-0.4">Mohhey</text>
+  <text x="26" y="176" font-family="PP Neue Montreal" font-weight="700" font-size="25" fill="#171614" letter-spacing="-0.4">M.</text>
   <text x="26" y="203" font-family="PP Neue Montreal" font-weight="400" font-size="19" fill="#171614">Player</text>
   <rect x="26" y="222" width="22" height="3" rx="1.5" fill="#ff5b2e"/>
   <text x="26" y="246" font-family="PP Neue Montreal" font-weight="400" font-size="11" fill="#6f6b63">Your music,</text>

@@ -28,5 +28,5 @@ for (const pkg of copies) {
   }
 }
 
-console.log('› Starting Mohhey Player…')
+console.log('› Starting M. Player…')
 run('bun', ['run', '--cwd', 'apps/desktop', 'dev'])

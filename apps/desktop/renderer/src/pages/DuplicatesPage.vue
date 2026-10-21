@@ -21,7 +21,7 @@ const hint = (g: DuplicateGroup) =>
 <template>
   <header class="px-8 pb-4 pt-6">
     <h1 class="text-[clamp(2.5rem,5vw,4.5rem)] font-medium leading-none">{{ t('Duplicates') }}</h1>
-    <p class="mt-3 max-w-2xl text-[15px] text-muted-foreground">{{ t('Mohhey never deletes your files. Use this list to decide what to clean up yourself.') }}</p>
+    <p class="mt-3 max-w-2xl text-[15px] text-muted-foreground">{{ t('M. Player never deletes your files. Use this list to decide what to clean up yourself.') }}</p>
   </header>
   <ErrorState v-if="error" :message="error" @retry="reload" />
   <div v-else-if="loading" class="px-8 text-muted-foreground" role="status">{{ t('Loading…') }}</div>

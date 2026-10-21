@@ -1,4 +1,4 @@
-# Mohhey Player
+# M. Player
 
 Offline desktop music player. **Electron · Vue 3 · shadcn-vue + Tailwind · Elysia (Bun) · SQLite.**
 

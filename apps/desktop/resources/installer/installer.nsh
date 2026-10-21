@@ -1,7 +1,7 @@
-﻿; Mohhey Player installer: a step-by-step wizard (welcome > licence > folder > install > finish) in the app's colours.
+﻿; M. Player installer: a step-by-step wizard (welcome > licence > folder > install > finish) in the app's colours.
 ; Text is provided for English (1033) and Persian (1065). Saved as UTF-8 with BOM so NSIS reads the Persian text.
 
-BrandingText "Mohhey Player"
+BrandingText "M. Player"
 
 !macro customHeader
   ; Farsi.nsh (NSIS 3.0.4) lacks these; defining them first keeps the build warning-free.
@@ -18,12 +18,12 @@ BrandingText "Mohhey Player"
   StrCpy $isForceCurrentInstall "1"
 !macroend
 
-LangString WelcomeTitle 1033 "Welcome to Mohhey Player"
-LangString WelcomeTitle 1065 "به موهی پلیر خوش آمدید"
-LangString WelcomeText 1033 "This wizard installs Mohhey Player, an offline music player, step by step.$\r$\n$\r$\nNothing is chosen for you: you will review the licence and pick the install folder yourself. Mohhey Player never connects to the internet and never touches your music files.$\r$\n$\r$\nClick Next to continue."
-LangString WelcomeText 1065 "این نصاب، موهی پلیر (پخش‌کننده‌ی آفلاین موسیقی) را مرحله‌به‌مرحله نصب می‌کند.$\r$\n$\r$\nهیچ چیز از پیش برای شما انتخاب نشده است: مجوز را می‌خوانید و پوشه‌ی نصب را خودتان انتخاب می‌کنید. موهی پلیر هرگز به اینترنت وصل نمی‌شود و به فایل‌های موسیقی شما دست نمی‌زند.$\r$\n$\r$\nبرای ادامه روی «بعدی» بزنید."
-LangString RemoveDataPrompt 1033 "Also delete your Mohhey Player library data (playlists, play counts, settings)?$\r$\n$\r$\nYour music files are never deleted."
-LangString RemoveDataPrompt 1065 "اطلاعات کتابخانه‌ی موهی پلیر (پلی‌لیست‌ها، تعداد پخش، تنظیمات) هم حذف شود؟$\r$\n$\r$\nفایل‌های موسیقی شما هرگز حذف نمی‌شوند."
+LangString WelcomeTitle 1033 "Welcome to M. Player"
+LangString WelcomeTitle 1065 "به M. Player خوش آمدید"
+LangString WelcomeText 1033 "This wizard installs M. Player, an offline music player, step by step.$\r$\n$\r$\nNothing is chosen for you: you will review the licence and pick the install folder yourself. M. Player never connects to the internet and never touches your music files.$\r$\n$\r$\nClick Next to continue."
+LangString WelcomeText 1065 "این نصاب، M. Player (پخش‌کننده‌ی آفلاین موسیقی) را مرحله‌به‌مرحله نصب می‌کند.$\r$\n$\r$\nهیچ چیز از پیش برای شما انتخاب نشده است: مجوز را می‌خوانید و پوشه‌ی نصب را خودتان انتخاب می‌کنید. M. Player هرگز به اینترنت وصل نمی‌شود و به فایل‌های موسیقی شما دست نمی‌زند.$\r$\n$\r$\nبرای ادامه روی «بعدی» بزنید."
+LangString RemoveDataPrompt 1033 "Also delete your M. Player library data (playlists, play counts, settings)?$\r$\n$\r$\nYour music files are never deleted."
+LangString RemoveDataPrompt 1065 "اطلاعات کتابخانه‌ی M. Player (پلی‌لیست‌ها، تعداد پخش، تنظیمات) هم حذف شود؟$\r$\n$\r$\nفایل‌های موسیقی شما هرگز حذف نمی‌شوند."
 
 ; Persian versions of electron-builder's built-in messages (it only ships English for these).
 LangString appRunning 1065 "${PRODUCT_NAME} در حال اجراست.$\r$\nبرای بستن آن روی تأیید بزنید. اگر بسته نشد، آن را دستی ببندید."

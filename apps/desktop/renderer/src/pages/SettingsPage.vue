@@ -106,7 +106,7 @@ const switchCls = (on: boolean) => cn('relative h-6 w-11 shrink-0 rounded-full t
           <Button variant="ghost" size="icon" class="rounded-full text-muted-foreground hover:text-destructive" :aria-label="t('Remove folder {name}', { name: f.path })" :title="t('Remove from library (files are not deleted)')" @click="library.removeFolder(f.id)"><Trash2 class="size-4" /></Button>
         </li>
       </ul>
-      <p class="mt-2 text-[13px] text-muted-foreground">{{ t('Removing a folder only removes it from Mohhey. Your files are never touched.') }}</p>
+      <p class="mt-2 text-[13px] text-muted-foreground">{{ t('Removing a folder only removes it from M. Player. Your files are never touched.') }}</p>
 
       <div v-if="library.scan && library.scan.state !== 'idle'" class="mt-4 rounded-2xl bg-card p-5 shadow-card" role="status">
         <div class="flex items-center justify-between text-sm">

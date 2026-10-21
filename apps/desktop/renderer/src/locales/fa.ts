@@ -7,7 +7,7 @@ import type { Messages } from './en'
  */
 export const fa: { tree: Messages; literals: Record<string, string>; nouns: Record<string, string> } = {
   tree: {
-    appName: 'Mohhey',
+    appName: 'M. Player',
     nav: {
       home: 'خانه', songs: 'آهنگ‌ها', folders: 'پوشه‌ها', albums: 'آلبوم‌ها', artists: 'هنرمندان', favorites: 'علاقه‌مندی‌ها',
       playlists: 'پلی‌لیست‌ها', search: 'جست‌وجو', settings: 'تنظیمات', library: 'کتابخانه', newPlaylist: 'پلی‌لیست جدید',
@@ -20,7 +20,7 @@ export const fa: { tree: Messages; literals: Record<string, string>; nouns: Reco
     },
     empty: {
       libraryTitle: 'موسیقی‌ات را به خانه بیاور',
-      libraryBody: 'یک پوشه انتخاب کن تا موهی آهنگ‌ها، کاورها و آلبوم‌هایت را بخواند. هیچ‌چیز از کامپیوتر تو بیرون نمی‌رود.',
+      libraryBody: 'یک پوشه انتخاب کن تا M. Player آهنگ‌ها، کاورها و آلبوم‌هایت را بخواند. هیچ‌چیز از کامپیوتر تو بیرون نمی‌رود.',
       chooseFolder: 'انتخاب پوشه',
       songsTitle: 'هنوز آهنگی نیست', songsBody: 'یک پوشه‌ی موسیقی اضافه کن تا کتابخانه پر شود.',
       favoritesTitle: 'هنوز علاقه‌مندی‌ای نیست', favoritesBody: 'روی قلب هر آهنگ بزن تا اینجا ظاهر شود.',
@@ -69,7 +69,7 @@ export const fa: { tree: Messages; literals: Record<string, string>; nouns: Reco
     'Instant search, in any language': 'جست‌وجوی فوری، به هر زبانی',
     'Music folders': 'پوشه‌های موسیقی', 'Add folder': 'افزودن پوشه', Rescan: 'اسکن دوباره', 'Scanning…': 'در حال اسکن…', 'Try again': 'تلاش دوباره',
     'Remove from library (files are not deleted)': 'حذف از کتابخانه (فایل‌ها پاک نمی‌شوند)',
-    'Removing a folder only removes it from Mohhey. Your files are never touched.': 'حذف پوشه فقط آن را از موهی برمی‌دارد. به فایل‌هایت دست نمی‌زنیم.',
+    'Removing a folder only removes it from M. Player. Your files are never touched.': 'حذف پوشه فقط آن را از M. Player برمی‌دارد. به فایل‌هایت دست نمی‌زنیم.',
     'Scanning your library': 'در حال اسکن کتابخانه‌ات', 'Last scan finished': 'آخرین اسکن تمام شد', 'Scan stopped': 'اسکن متوقف شد',
     '{added} added · {updated} updated · {removed} missing · {failed} couldn’t be read': '{added} اضافه · {updated} به‌روز · {removed} گم‌شده · {failed} ناخوانا',
     'Problems — show details': 'مشکلات — نمایش جزئیات',
@@ -89,13 +89,13 @@ export const fa: { tree: Messages; literals: Record<string, string>; nouns: Reco
     'Playback speed': 'سرعت پخش', Normal: 'عادی',
     'Couldn’t save the changes.': 'ذخیره‌ی تغییرات انجام نشد.', Saved: 'ذخیره شد', 'Restoring the original tags…': 'در حال بازگرداندن تگ‌های اصلی…',
     'Edit info': 'ویرایش اطلاعات', 'Edit info…': 'ویرایش اطلاعات…',
-    'Changes are saved in Mohhey only. Your audio file is not modified.': 'تغییرات فقط داخل موهی ذخیره می‌شود. به فایل صوتی تو دست زده نمی‌شود.',
+    'Changes are saved in M. Player only. Your audio file is not modified.': 'تغییرات فقط داخل M. Player ذخیره می‌شود. به فایل صوتی تو دست زده نمی‌شود.',
     'Restore original tags': 'بازگرداندن تگ‌های اصلی', 'Resume at {time}': 'ادامه از {time}', 'Resumed at {time}': 'از {time} ادامه یافت',
     'Back 15 seconds': '۱۵ ثانیه عقب', 'Forward 30 seconds': '۳۰ ثانیه جلو',
     'Identical files': 'فایل‌های یکسان', 'Same song, different files': 'یک آهنگ، فایل‌های متفاوت',
     'These files have exactly the same content.': 'محتوای این فایل‌ها دقیقاً یکی است.',
     'Same title, artist, album and length, but the files differ (another rip, bitrate or format).': 'عنوان، هنرمند، آلبوم و مدت یکی است، ولی فایل‌ها فرق دارند (ریپ، بیت‌ریت یا فرمت دیگر).',
-    Duplicates: 'تکراری‌ها', 'Mohhey never deletes your files. Use this list to decide what to clean up yourself.': 'موهی هرگز فایل‌هایت را پاک نمی‌کند. از این فهرست برای تصمیم‌گیری درباره‌ی مرتب‌کردن دستی استفاده کن.',
+    Duplicates: 'تکراری‌ها', 'M. Player never deletes your files. Use this list to decide what to clean up yourself.': 'M. Player هرگز فایل‌هایت را پاک نمی‌کند. از این فهرست برای تصمیم‌گیری درباره‌ی مرتب‌کردن دستی استفاده کن.',
     'No duplicates found': 'تکراری‌ای پیدا نشد', 'Every song in your library appears only once.': 'هر آهنگ کتابخانه‌ات فقط یک بار آمده است.', 'Find duplicates': 'پیداکردن تکراری‌ها',
     Sound: 'صدا', 'Even out volume': 'یکسان‌سازی بلندی صدا',
     'Quiet podcasts and loud songs end up at a similar level. Uses ReplayGain tags when present, otherwise learns from the first seconds of each track.': 'پادکست‌های کم‌صدا و آهنگ‌های پرصدا تقریباً هم‌سطح می‌شوند. اگر تگ ReplayGain باشد از آن استفاده می‌کند، وگرنه از ثانیه‌های اول هر آهنگ یاد می‌گیرد.',

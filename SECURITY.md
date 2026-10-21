@@ -1,6 +1,6 @@
 # Security
 
-Mohhey Player is an offline desktop app. It has no accounts, telemetry, auto-update or outgoing network traffic. This page lists
+M. Player is an offline desktop app. It has no accounts, telemetry, auto-update or outgoing network traffic. This page lists
 what protects it and how each point was checked.
 
 ## Model

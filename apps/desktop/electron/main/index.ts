@@ -53,7 +53,7 @@ function loadWindowState(): WindowState {
 
 /** Mini-player mode: a small always-on-top window. The app leaves the taskbar and lives in the tray while it is active. */
 const MINI_SIZE = { width: 400, height: 108 }
-const DEFAULT_TRAY_LABELS: TrayLabels = { show: 'Show Mohhey', playPause: 'Play / Pause', next: 'Next', previous: 'Previous', quit: 'Quit', tooltip: 'Mohhey Player' }
+const DEFAULT_TRAY_LABELS: TrayLabels = { show: 'Show M. Player', playPause: 'Play / Pause', next: 'Next', previous: 'Previous', quit: 'Quit', tooltip: 'M. Player' }
 let beforeMini: { bounds: Electron.Rectangle; maximized: boolean } | null = null
 
 const WINDOW_CONTROLS: readonly WindowControl[] = ['minimize', 'maximize', 'close']
@@ -190,7 +190,7 @@ app.whenReady().then(async () => {
   try {
     api = await startApi([allowedOrigin])
   } catch (err) {
-    dialog.showErrorBox('Mohhey Player could not start', err instanceof Error ? err.message : String(err))
+    dialog.showErrorBox('M. Player could not start', err instanceof Error ? err.message : String(err))
     app.quit()
     return
   }

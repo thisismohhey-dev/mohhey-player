@@ -1,11 +1,11 @@
-Mohhey Player - Licence and Privacy
+M. Player - Licence and Privacy
 
 Copyright (c) Mohhey. All rights reserved.
 
-You may install and use Mohhey Player for personal, non-commercial listening.
+You may install and use M. Player for personal, non-commercial listening.
 
 PRIVACY
-- Mohhey Player works completely offline. It makes no network requests to the internet, has no telemetry, no accounts and no automatic updates.
+- M. Player works completely offline. It makes no network requests to the internet, has no telemetry, no accounts and no automatic updates.
 - Your music files are only ever read. They are never changed, moved or deleted. Edited tags are stored in the app's own database, not in your files.
 - The library database, artwork cache and settings are stored in %APPDATA%\Mohhey Player on your computer only.
 
