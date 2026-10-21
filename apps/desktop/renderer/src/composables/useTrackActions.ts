@@ -5,13 +5,14 @@ import { api, ApiClientError } from '@/lib/api'
 import { useLibraryStore } from '@/stores/library'
 import { usePlayerStore } from '@/stores/player'
 import { useUiStore } from '@/stores/ui'
-import { promptText } from './usePrompt'
+import { usePlaylistActions } from './usePlaylistActions'
 
 export function useTrackActions() {
   const player = usePlayerStore()
   const library = useLibraryStore()
   const ui = useUiStore()
   const router = useRouter()
+  const playlistActions = usePlaylistActions()
 
   async function addToPlaylist(playlistId: number, tracks: Track[]): Promise<void> {
     try {
@@ -24,9 +25,7 @@ export function useTrackActions() {
   }
 
   async function addToNewPlaylist(tracks: Track[]): Promise<void> {
-    const name = await promptText({ title: t('New playlist'), label: t('Name'), confirmLabel: t('Create') })
-    if (!name) return
-    const p = await library.createPlaylist(name)
+    const p = await playlistActions.create()
     if (p && tracks.length) await addToPlaylist(p.id, tracks)
   }
 
