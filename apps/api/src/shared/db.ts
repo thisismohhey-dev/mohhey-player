@@ -90,6 +90,19 @@ export const MIGRATIONS: Migration[] = [
     name: 'playlist_icons',
     sql: `ALTER TABLE playlists ADD COLUMN icon TEXT NOT NULL DEFAULT 'list-music';`,
   },
+  {
+    version: 3,
+    name: 'resume_hash_gain_edits',
+    sql: `
+      ALTER TABLE tracks ADD COLUMN resume_ms INTEGER NOT NULL DEFAULT 0;
+      ALTER TABLE tracks ADD COLUMN content_hash TEXT;
+      ALTER TABLE tracks ADD COLUMN gain_db REAL;
+      ALTER TABLE tracks ADD COLUMN meta_locked INTEGER NOT NULL DEFAULT 0;
+      CREATE INDEX idx_tracks_content_hash ON tracks(content_hash) WHERE content_hash IS NOT NULL;
+      -- Re-read every file once on the next scan: repairs garbled tags, reads ReplayGain, computes content hashes.
+      UPDATE tracks SET mtime_ms = 0;
+    `,
+  },
 ]
 
 export function openDatabase(path: string, migrations: Migration[] = MIGRATIONS): Database {
