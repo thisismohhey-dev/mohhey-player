@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { t } from '@/lib/i18n'
-import { Disc3, Heart, ListEnd, ListMusic, ListPlus, Play, Trash2, UserRound } from 'lucide-vue-next'
+import { Disc3, Heart, ListEnd, ListMusic, ListPlus, PencilLine, Play, Trash2, UserRound } from 'lucide-vue-next'
 import type { Track } from '@mohhey/contracts'
 import {
   ContextMenuItem, ContextMenuSeparator, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger,
 } from '@/components/ui/context-menu'
 import { useTrackActions } from '@/composables/useTrackActions'
+import { editTrackInfo } from '@/composables/useTrackEdit'
 import { useLibraryStore } from '@/stores/library'
 
 const props = defineProps<{ track: Track; removable?: boolean }>()
@@ -35,6 +36,7 @@ const library = useLibraryStore()
   <ContextMenuSeparator />
   <ContextMenuItem class="gap-2.5 rounded-lg py-2" :disabled="!props.track.albumId" @select="a.goToAlbum(props.track)"><Disc3 class="size-4" />{{ t('Go to album') }}</ContextMenuItem>
   <ContextMenuItem class="gap-2.5 rounded-lg py-2" :disabled="!props.track.artistId" @select="a.goToArtist(props.track)"><UserRound class="size-4" />{{ t('Go to artist') }}</ContextMenuItem>
+  <ContextMenuItem class="gap-2.5 rounded-lg py-2" @select="editTrackInfo(props.track)"><PencilLine class="size-4" />{{ t('Edit info…') }}</ContextMenuItem>
   <template v-if="removable">
     <ContextMenuSeparator />
     <ContextMenuItem variant="destructive" class="gap-2.5 rounded-lg py-2" @select="emit('remove')"><Trash2 class="size-4" />{{ t('Remove from playlist') }}</ContextMenuItem>
