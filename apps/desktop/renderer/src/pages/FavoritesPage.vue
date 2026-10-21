@@ -14,7 +14,7 @@ const { source, total, loading, error, reload } = usePagedTracks(() => ({ favori
 <template>
   <header class="flex flex-wrap items-end justify-between gap-4 px-8 pb-4 pt-6">
     <div>
-      <h1 class="text-[clamp(2.5rem,5vw,4.5rem)] font-medium leading-none">Favorites</h1>
+      <h1 class="text-[clamp(2.5rem,5vw,4.5rem)] font-medium leading-none">{{ t('Favorites') }}</h1>
       <p class="mt-3 text-[15px] text-muted-foreground">{{ plural(total, 'song') }}</p>
     </div>
     <div class="flex items-center gap-3"><PlayActions :load="source.all" :disabled="!total" /></div>
