@@ -15,15 +15,17 @@ if (!existsSync(join(root, 'node_modules'))) {
   run('bun', ['install'])
 }
 
-// Bun skips Electron's postinstall unless trusted; download the binary on first run.
+// Bun skips Electron's postinstall unless trusted, and may keep several copies of the package (one per dependency set);
+// every copy must have its binary, because tools resolve whichever one they find first.
 const bunStore = join(root, 'node_modules', '.bun')
-const electronDir = existsSync(bunStore)
-  ? readdirSync(bunStore).find((d) => d.startsWith('electron@'))
-  : undefined
-const pkg = electronDir ? join(bunStore, electronDir, 'node_modules', 'electron') : join(root, 'node_modules', 'electron')
-if (existsSync(pkg) && !existsSync(join(pkg, 'dist'))) {
-  console.log('› Downloading Electron (first run only)…')
-  run('node', ['install.js'], pkg)
+const copies = existsSync(bunStore)
+  ? readdirSync(bunStore).filter((d) => d.startsWith('electron@')).map((d) => join(bunStore, d, 'node_modules', 'electron'))
+  : [join(root, 'node_modules', 'electron')]
+for (const pkg of copies) {
+  if (existsSync(pkg) && !existsSync(join(pkg, 'dist'))) {
+    console.log('› Downloading Electron (first run only)…')
+    run('node', ['install.js'], pkg)
+  }
 }
 
 console.log('› Starting Mohhey Player…')
