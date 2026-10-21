@@ -23,6 +23,22 @@ Offline desktop music player. **Electron · Vue 3 · shadcn-vue + Tailwind · El
   </tr>
 </table>
 
+### Persian / right-to-left
+Switch the language in **Settings → Language**. The whole UI flips to RTL (sidebar, queue panel, lists, breadcrumbs) and uses
+[Vazirmatn](https://github.com/rastikerdar/vazirmatn) (SIL OFL) with Persian digits and the Jalali date. Playback controls and the
+seek bar deliberately stay left-to-right, as on every media player.
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/fa-home.png" alt="Home (Persian)"></td>
+    <td width="50%"><img src="docs/screenshots/fa-queue.png" alt="Queue (Persian)"></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/fa-folders.png" alt="Folders (Persian)"></td>
+    <td><img src="docs/screenshots/fa-settings.png" alt="Settings (Persian)"></td>
+  </tr>
+</table>
+
 ### Mini player
 Always-on-top, stays above every other window so you can control playback without switching apps
 (`Ctrl+Shift+M`, or the mini-player button next to the queue).
@@ -63,4 +79,4 @@ Settings → "Clear & rebuild" regenerates the artwork cache.
 - No installer yet: packaging needs `bun build --compile` for the API plus electron-builder (see ADR 0002).
 - Media keys and OS "now playing" use Chromium's MediaSession. Implemented, but not verified on real hardware.
 - Equalizer, crossfade, gapless, lyrics and tag editing are deliberately deferred until the core is stable.
-- Persian UI strings and a Persian font (e.g. Vazirmatn) are not included yet; the layout is already RTL-ready.
+- Only English and Persian are translated; API error messages (e.g. validation) are still English.
