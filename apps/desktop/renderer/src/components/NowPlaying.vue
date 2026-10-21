@@ -33,7 +33,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
     <div class="absolute inset-0 bg-black/45" aria-hidden="true" />
 
     <div class="relative flex h-full flex-col px-10 pb-10 pt-[calc(var(--titlebar-h)+8px)] text-foreground">
-      <button class="grid size-10 place-items-center self-start rounded-full bg-white/12 backdrop-blur hover:bg-white/20" aria-label="Close now playing" @click="ui.nowPlayingOpen = false">
+      <button class="grid size-10 place-items-center self-start rounded-full bg-white/12 backdrop-blur hover:bg-white/20" :aria-label="t('Close now playing')" data-action="now-playing-close" @click="ui.nowPlayingOpen = false">
         <ChevronDown class="size-5" />
       </button>
 
@@ -42,7 +42,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
         <div class="flex w-full items-end justify-between gap-4">
           <div class="min-w-0">
             <h2 dir="auto" class="truncate text-4xl font-medium leading-tight">{{ track.title }}</h2>
-            <p dir="auto" class="mt-1 truncate text-lg text-white/75">{{ track.artist || 'Unknown artist' }}<template v-if="track.album"> · {{ track.album }}</template></p>
+            <p dir="auto" class="mt-1 truncate text-lg text-white/75">{{ track.artist || t('Unknown artist') }}<template v-if="track.album"> · {{ track.album }}</template></p>
           </div>
           <button
             :class="cn('grid size-11 shrink-0 place-items-center rounded-full bg-white/12 backdrop-blur transition-colors hover:bg-white/22', track.favorite && 'text-[#ff7a4d]')"
