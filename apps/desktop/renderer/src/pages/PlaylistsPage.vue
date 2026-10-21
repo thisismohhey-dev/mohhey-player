@@ -16,7 +16,7 @@ const player = usePlayerStore()
 const router = useRouter()
 
 async function create(): Promise<void> {
-  const name = await promptText({ title: 'New playlist', label: 'Name', confirmLabel: 'Create' })
+  const name = await promptText({ title: t('New playlist'), label: t('Name'), confirmLabel: t('Create') })
   if (!name) return
   const p = await library.createPlaylist(name)
   if (p) void router.push({ name: 'playlist', params: { id: p.id } })
@@ -30,7 +30,7 @@ async function play(id: number): Promise<void> {
 <template>
   <header class="flex items-end justify-between gap-4 px-8 pb-4 pt-6">
     <div>
-      <h1 class="text-[clamp(2.5rem,5vw,4.5rem)] font-medium leading-none">Playlists</h1>
+      <h1 class="text-[clamp(2.5rem,5vw,4.5rem)] font-medium leading-none">{{ t('Playlists') }}</h1>
       <p class="mt-3 text-[15px] text-muted-foreground">{{ plural(library.playlists.length, 'playlist') }}</p>
     </div>
     <Button class="h-11 rounded-full px-5" @click="create"><Plus class="size-4" />{{ t('nav.newPlaylist') }}</Button>
@@ -42,7 +42,7 @@ async function play(id: number): Promise<void> {
     <MediaCard
       v-for="p in library.playlists" :key="p.id" :to="{ name: 'playlist', params: { id: p.id } }" :title="p.name"
       :subtitle="`${plural(p.trackCount, 'song')}${p.durationMs ? ' · ' + formatLong(p.durationMs) : ''}`" :mosaic="p.coverHashes"
-      :play-label="p.trackCount ? `Play ${p.name}` : undefined" @play="play(p.id)"
+      :play-label="p.trackCount ? t('Play {title}', { title: p.name }) : undefined" @play="play(p.id)"
     />
   </div>
 </template>
