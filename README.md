@@ -102,7 +102,9 @@ bun run dist          # → apps/desktop/dist/Mohhey-Player-Setup-<version>.exe
 bun run dist:dir      # unpacked app only (faster, for testing)
 ```
 `dist` compiles the API into a self-contained executable (`scripts/build-api.mjs`), builds the renderer, and packages everything with
-electron-builder (NSIS: choose the folder, Start-menu and desktop shortcuts; your library data is kept on uninstall). The installer is
+electron-builder. The installer is a step-by-step wizard in the app's look (English / Persian): welcome → licence → install folder (you choose it) →
+install → finish. It installs per user without administrator rights; uninstalling asks before removing library data. See [SECURITY.md](SECURITY.md).
+`node scripts/checksums.mjs` writes `dist/SHA256SUMS.txt`. The installer is
 unsigned, so Windows SmartScreen will warn until it is code-signed. No auto-update is configured on purpose.
 
 ## Smooth transitions
