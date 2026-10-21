@@ -1,6 +1,6 @@
 import { Elysia } from 'elysia'
 import { z } from 'zod'
-import { PlaylistAddTracksBodySchema, PlaylistMoveBodySchema, PlaylistNameBodySchema } from '@mohhey/contracts'
+import { PlaylistAddTracksBodySchema, PlaylistMoveBodySchema, PlaylistNameBodySchema, PlaylistUpdateBodySchema } from '@mohhey/contracts'
 import { badRequest, notFound } from '../../shared/errors'
 import type { PlaylistsRepo } from './repo'
 
@@ -15,12 +15,12 @@ export const playlistsRoutes = (repo: PlaylistsRepo) => {
   }
   return new Elysia({ name: 'playlists', prefix: '/playlists' })
     .get('/', () => ({ items: repo.list() }))
-    .post('/', ({ body, set }) => { set.status = 201; return repo.create(body.name) }, { body: PlaylistNameBodySchema })
+    .post('/', ({ body, set }) => { set.status = 201; return repo.create(body.name, body.icon) }, { body: PlaylistNameBodySchema })
     .get('/:id', ({ params }) => must(params.id), { params: IdParams })
     .patch('/:id', ({ params, body }) => {
-      if (!repo.rename(params.id, body.name)) throw notFound('Playlist')
+      if (!repo.update(params.id, body)) throw notFound('Playlist')
       return must(params.id)
-    }, { params: IdParams, body: PlaylistNameBodySchema })
+    }, { params: IdParams, body: PlaylistUpdateBodySchema })
     .delete('/:id', ({ params }) => {
       if (!repo.remove(params.id)) throw notFound('Playlist')
       return { ok: true }
