@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useArtworkTint } from '@/composables/useArtworkTint'
 import { Heart, ListMusic, Maximize2, PictureInPicture2, TriangleAlert } from 'lucide-vue-next'
 import { t } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
@@ -13,14 +11,12 @@ import VolumeControl from './VolumeControl.vue'
 
 const player = usePlayerStore()
 const ui = useUiStore()
-const tint = useArtworkTint(computed(() => player.current?.artworkHash), computed(() => player.current?.album || player.current?.title))
 </script>
 
 <template>
   <footer class="pointer-events-none absolute inset-x-0 bottom-0 z-30 px-5 pb-5">
     <div
       role="region" :aria-label="t('Player')"
-      :style="tint"
       class="pointer-events-auto mx-auto grid max-w-[1180px] grid-cols-[minmax(0,1fr)_auto] items-center gap-x-6 gap-y-1 glass rounded-[28px] px-4 py-3 @container lg:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)_minmax(0,1fr)]"
     >
       <!-- track info -->
