@@ -8,6 +8,10 @@ import { PlayQueue } from '@/lib/player/queue'
 import { useUiStore } from './ui'
 
 const HISTORY_MIN_MS = 30_000
+const FADE_OUT_MS = 220
+const FADE_IN_MS = 380
+const PAUSE_FADE_MS = 140
+const RESUME_FADE_MS = 200
 const PERSIST_DEBOUNCE_MS = 600
 const POSITION_PERSIST_MS = 5_000
 
@@ -91,7 +95,25 @@ export const usePlayerStore = defineStore('player', () => {
     }
   }
 
+  /**
+   * Changes track without an abrupt cut: fade the current sound out, switch, then fade the new track in.
+   * Rapid presses are safe: only the most recent switch completes.
+   */
+  let switchId = 0
+  async function withFade(change: () => void): Promise<void> {
+    const mine = ++switchId
+    if (engine.isAudible) {
+      await engine.fade(0, FADE_OUT_MS)
+      if (mine !== switchId) return
+    }
+    change()
+    if (engine.isPaused && !engine.hasSource) { engine.setGain(1); return }
+    engine.setGain(0)
+    void engine.fade(1, FADE_IN_MS)
+  }
+
   function advance(auto: boolean): void {
+    if (auto) engine.setGain(1) // the previous track already ended on its own
     const step = queue.next(auto)
     if (step.kind === 'end') {
       // Playback finished: park on the last track, paused at the end.
@@ -105,7 +127,8 @@ export const usePlayerStore = defineStore('player', () => {
   function playTracks(tracks: Track[], startIndex = 0): void {
     if (!tracks.length) return
     queue.set(tracks, startIndex)
-    loadCurrent(true)
+    syncCurrent()
+    void withFade(() => loadCurrent(true))
   }
 
   async function togglePlay(): Promise<void> {
@@ -113,11 +136,25 @@ export const usePlayerStore = defineStore('player', () => {
     if (status.value === 'error') { loadCurrent(true); return }
     if (engine.isPaused) {
       if (!engine.hasSource) loadCurrent(true, positionMs.value)
-      else await engine.play().catch(() => undefined)
-    } else engine.pause()
+      else { engine.setGain(0); await engine.play().catch(() => undefined); void engine.fade(1, RESUME_FADE_MS) }
+    } else {
+      // Short fade so pausing doesn't click.
+      const mine = ++switchId
+      await engine.fade(0, PAUSE_FADE_MS)
+      if (mine !== switchId) return
+      engine.pause()
+      engine.setGain(1)
+    }
   }
 
-  function next(): void { if (queue.current) advance(false) }
+  function next(): void {
+    if (!queue.current) return
+    // The queue position moves on every press (so rapid presses skip several tracks); only the audio switch is faded/debounced.
+    const step = queue.next(false)
+    if (step.kind === 'end') return
+    syncCurrent()
+    void withFade(() => loadCurrent(true))
+  }
 
   function previous(): void {
     if (!queue.current) return
@@ -130,7 +167,8 @@ export const usePlayerStore = defineStore('player', () => {
       if (engine.isPaused) void engine.play().catch(() => undefined)
       return
     }
-    loadCurrent(true)
+    syncCurrent()
+    void withFade(() => loadCurrent(true))
   }
 
   function seek(ms: number): void { engine.seek(ms); positionMs.value = ms }
@@ -150,7 +188,7 @@ export const usePlayerStore = defineStore('player', () => {
   }
 
   // ── queue management ───────────────────────────────────────
-  function jumpTo(pos: number): void { if (queue.jumpTo(pos)) loadCurrent(true) }
+  function jumpTo(pos: number): void { if (queue.jumpTo(pos)) { syncCurrent(); void withFade(() => loadCurrent(true)) } }
 
   function enqueue(tracks: Track[], where: 'next' | 'end'): void {
     const wasEmpty = queue.length === 0
