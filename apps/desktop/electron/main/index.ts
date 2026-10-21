@@ -38,9 +38,40 @@ function loadWindowState(): WindowState {
   } catch { return fallback }
 }
 
+/** Mini-player mode: small, frameless-ish, always above every other window. */
+const MINI_SIZE = { width: 440, height: 120 }
+let beforeMini: { bounds: Electron.Rectangle; maximized: boolean } | null = null
+
+function setMiniMode(win: BrowserWindow, on: boolean): void {
+  if (on === (beforeMini !== null)) return
+  if (on) {
+    beforeMini = { bounds: win.getNormalBounds(), maximized: win.isMaximized() }
+    if (beforeMini.maximized) win.unmaximize()
+    const area = screen.getDisplayMatching(beforeMini.bounds).workArea
+    win.setMinimumSize(MINI_SIZE.width, MINI_SIZE.height)
+    win.setBounds({ ...MINI_SIZE, x: area.x + area.width - MINI_SIZE.width - 24, y: area.y + area.height - MINI_SIZE.height - 24 })
+    win.setMaximizable(false)
+    win.setResizable(false)
+    // 'screen-saver' keeps it above other windows, including full-screen apps and the taskbar.
+    win.setAlwaysOnTop(true, 'screen-saver')
+    win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
+  } else {
+    const prev = beforeMini!
+    beforeMini = null
+    win.setAlwaysOnTop(false)
+    win.setVisibleOnAllWorkspaces(false)
+    win.setResizable(true)
+    win.setMaximizable(true)
+    win.setMinimumSize(900, 600)
+    win.setBounds(prev.bounds)
+    if (prev.maximized) win.maximize()
+  }
+}
+
 function saveWindowState(win: BrowserWindow): void {
-  const b = win.getNormalBounds()
-  try { writeFileSync(stateFile(), JSON.stringify({ ...b, maximized: win.isMaximized() })) } catch { /* non-fatal */ }
+  const b = beforeMini ? beforeMini.bounds : win.getNormalBounds()
+  const maximized = beforeMini ? beforeMini.maximized : win.isMaximized()
+  try { writeFileSync(stateFile(), JSON.stringify({ ...b, maximized })) } catch { /* non-fatal */ }
 }
 
 function createWindow(): void {
@@ -72,6 +103,10 @@ function createWindow(): void {
 }
 
 function registerIpc(): void {
+  ipcMain.on('window:set-mini', (e, on: unknown) => {
+    if (!isTrustedSender(e, allowedOrigin) || typeof on !== 'boolean' || !mainWindow) return
+    setMiniMode(mainWindow, on)
+  })
   ipcMain.on('window:set-theme', (e, dark: unknown) => {
     if (!isTrustedSender(e, allowedOrigin) || typeof dark !== 'boolean') return
     // Only Windows/Linux draw native caption buttons through titleBarOverlay.
