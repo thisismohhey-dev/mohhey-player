@@ -1,6 +1,7 @@
 import { Elysia } from 'elysia'
 import { timingSafeEqual } from 'node:crypto'
 import type { ApiError } from '@mohhey/contracts'
+import { browseRoutes } from './modules/library/browse'
 import { libraryRoutes } from './modules/library/routes'
 import { LibraryScanner, type MetadataReader } from './modules/library/scanner'
 import { artworkRoutes } from './modules/artwork/module'
@@ -71,6 +72,7 @@ export function createApp({ config, db, metadataReader }: AppDeps) {
     .get('/health', () => ({ ok: true }))
     .use(libraryRoutes(db, scanner))
     .use(tracksRoutes(tracks))
+    .use(browseRoutes(db, tracks))
     .use(playlistsRoutes(new PlaylistsRepo(db, tracks)))
     .use(searchRoutes(tracks))
     .use(settingsRoutes(new SettingsRepo(db)))
