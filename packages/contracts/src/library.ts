@@ -19,6 +19,12 @@ export const TrackSchema = z.object({
   playCount: z.number().int(),
   lastPlayedAt: z.number().int().nullable(),
   missing: z.boolean(),
+  /** Where playback stopped (ms); 0 when not started or finished. Only tracked for long tracks (podcasts, audiobooks). */
+  resumeMs: z.number().int(),
+  /** Loudness correction in dB (from ReplayGain tags or measured during playback); null when unknown. */
+  gainDb: z.number().nullable(),
+  /** True when title/artist/album were edited inside Mohhey (the file itself is never modified). */
+  edited: z.boolean(),
 })
 export type Track = z.infer<typeof TrackSchema>
 
@@ -108,3 +114,25 @@ export const BrowseResultSchema = z.object({
   tracks: z.array(TrackSchema),
 })
 export type BrowseResult = z.infer<typeof BrowseResultSchema>
+
+export const PositionBodySchema = z.object({ positionMs: z.number().int().min(0).max(1000 * 3600 * 100) })
+export const GainBodySchema = z.object({ gainDb: z.number().min(-24).max(24) })
+export const MetadataEditSchema = z.object({
+  title: z.string().trim().min(1).max(300),
+  artist: z.string().trim().max(300).default(''),
+  album: z.string().trim().max(300).default(''),
+})
+
+export const LyricsSchema = z.object({
+  synced: z.boolean(),
+  source: z.enum(['lrc-file', 'embedded']),
+  lines: z.array(z.object({ timeMs: z.number().int().nullable(), text: z.string() })),
+})
+export type Lyrics = z.infer<typeof LyricsSchema>
+
+export const DuplicateGroupSchema = z.object({
+  /** identical: byte-for-byte same content. same-song: same title, artist, album and length (e.g. another rip/bitrate). */
+  reason: z.enum(['identical', 'same-song']),
+  tracks: z.array(TrackSchema.extend({ folder: z.string(), sizeBytes: z.number().int() })),
+})
+export type DuplicateGroup = z.infer<typeof DuplicateGroupSchema>
