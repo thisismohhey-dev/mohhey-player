@@ -7,6 +7,8 @@ import { useUiStore } from '@/stores/ui'
 import Cover from './Cover.vue'
 import SeekBar from './SeekBar.vue'
 import TransportControls from './TransportControls.vue'
+import SleepMenu from './SleepMenu.vue'
+import SpeedMenu from './SpeedMenu.vue'
 import VolumeControl from './VolumeControl.vue'
 
 const player = usePlayerStore()
@@ -17,7 +19,7 @@ const ui = useUiStore()
   <footer class="pointer-events-none absolute inset-x-0 bottom-0 z-30 px-5 pb-5">
     <div
       role="region" :aria-label="t('Player')"
-      class="pointer-events-auto mx-auto grid max-w-[1180px] grid-cols-[minmax(0,1fr)_auto] items-center gap-x-6 gap-y-1 glass rounded-[28px] px-4 py-3 @container lg:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)_minmax(0,1fr)]"
+      class="pointer-events-auto mx-auto grid max-w-[1180px] grid-cols-[minmax(0,1fr)_auto] items-center gap-x-6 gap-y-1 glass rounded-[28px] px-4 py-3 @container lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_auto]"
     >
       <!-- track info -->
       <div class="flex min-w-0 items-center gap-3">
@@ -55,7 +57,9 @@ const ui = useUiStore()
       <!-- right: compact transport (small widths), queue, volume -->
       <div class="flex items-center justify-end gap-1">
         <div class="lg:hidden"><TransportControls /></div>
-        <div class="hidden xl:block"><VolumeControl /></div>
+        <SpeedMenu class="hidden md:grid" />
+        <SleepMenu class="hidden md:flex" />
+        <div class="hidden xl:block"><VolumeControl compact /></div>
         <button
           class="grid size-10 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-foreground/8 hover:text-foreground"
           :aria-label="t('Mini player')" :title="t('Mini player (Ctrl+Shift+M)')" data-action="mini-enter" @click="ui.setMiniMode(true)"
