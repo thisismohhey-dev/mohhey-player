@@ -11,7 +11,7 @@ const Icon = computed(() => (shownVolume.value === 0 ? VolumeX : shownVolume.val
 </script>
 
 <template>
-  <div class="flex items-center gap-2">
+  <div dir="ltr" class="flex items-center gap-2">
     <button
       class="grid size-9 place-items-center rounded-full text-muted-foreground transition-colors hover:text-foreground"
       :aria-label="player.muted ? t('player.unmute') : t('player.mute')" :aria-pressed="player.muted" :title="player.muted ? t('player.unmute') : t('player.mute')"
