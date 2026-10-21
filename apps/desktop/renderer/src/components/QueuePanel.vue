@@ -34,13 +34,13 @@ function key(e: KeyboardEvent, pos: number): void {
 <template>
   <aside
     class="absolute inset-y-0 end-0 z-20 flex w-[380px] max-w-[92vw] flex-col border-s bg-surface/95 pt-[var(--titlebar-h)] shadow-float backdrop-blur-xl"
-    aria-label="Queue"
+    :aria-label="t('Queue')"
   >
     <header class="flex items-center justify-between px-6 pb-3 pt-4">
       <h2 class="text-2xl font-medium">{{ t('player.queue') }}</h2>
       <div class="flex items-center gap-1">
-        <Button variant="ghost" size="sm" class="rounded-full text-muted-foreground" :disabled="player.entries.length < 2" @click="player.clearUpcoming()">Clear upcoming</Button>
-        <Button variant="ghost" size="icon-sm" class="rounded-full" aria-label="Close queue" @click="ui.queueOpen = false"><X class="size-4" /></Button>
+        <Button variant="ghost" size="sm" class="rounded-full text-muted-foreground" :disabled="player.entries.length < 2" @click="player.clearUpcoming()">{{ t('Clear upcoming') }}</Button>
+        <Button variant="ghost" size="icon-sm" class="rounded-full" :aria-label="t('Close queue')" @click="ui.queueOpen = false"><X class="size-4" /></Button>
       </div>
     </header>
 
@@ -61,14 +61,14 @@ function key(e: KeyboardEvent, pos: number): void {
       >
         <GripVertical class="size-4 shrink-0 cursor-grab text-muted-foreground/60 opacity-0 group-hover:opacity-100" aria-hidden="true" />
         <Cover :hash="entry.track.artworkHash" :seed="entry.track.album || entry.track.title" class="size-10 shrink-0 rounded-lg" />
-        <button class="min-w-0 flex-1 text-start" :aria-label="`Play ${entry.track.title}`" @click="player.jumpTo(pos)">
+        <button class="min-w-0 flex-1 text-start" :aria-label="t('Play {title}', { title: entry.track.title })" @click="player.jumpTo(pos)">
           <div dir="auto" class="truncate text-[14px] font-medium" :class="pos === player.position && 'text-brand'">{{ entry.track.title }}</div>
           <div dir="auto" class="truncate text-[13px] text-muted-foreground">{{ entry.track.artist }}</div>
         </button>
         <span class="text-xs tabular text-muted-foreground">{{ formatTime(entry.track.durationMs) }}</span>
         <button
           class="grid size-7 place-items-center rounded-full text-muted-foreground opacity-0 hover:bg-foreground/8 hover:text-foreground group-hover:opacity-100 group-focus-within:opacity-100"
-          :aria-label="`Remove ${entry.track.title} from queue`" @click="player.removeFromQueue(pos)"
+          :aria-label="t('Remove {title} from queue', { title: entry.track.title })" @click="player.removeFromQueue(pos)"
         ><X class="size-3.5" /></button>
       </li>
     </ol>
