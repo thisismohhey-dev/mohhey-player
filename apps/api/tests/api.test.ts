@@ -132,6 +132,35 @@ describe('library scan', () => {
   })
 })
 
+describe('folder browsing', () => {
+  test('lists subfolders and direct tracks, blocks paths outside the library', async () => {
+    mkdirSync(join(music, 'Rock', 'Live'), { recursive: true })
+    writeFileSync(join(music, 'Intro.mp3'), 'x')
+    writeFileSync(join(music, 'Rock', 'A - One.mp3'), 'x')
+    writeFileSync(join(music, 'Rock', 'Live', 'A - Two.mp3'), 'x')
+    writeFileSync(join(music, 'Rock', 'Live', 'A - Three.mp3'), 'x')
+    await addFolder(); await scan()
+
+    const roots = await json(call('/library/browse'))
+    expect(roots.parent).toBeNull()
+    expect(roots.folders[0].trackCount).toBe(4)
+
+    const top = await json(call('/library/browse?path=' + encodeURIComponent(music)))
+    expect(top.parent).toBe('')
+    expect(top.tracks.map((t: any) => t.title)).toEqual(['Intro'])
+    expect(top.folders).toEqual([{ name: 'Rock', path: join(music, 'Rock'), trackCount: 3 }])
+
+    const rock = await json(call('/library/browse?path=' + encodeURIComponent(join(music, 'Rock'))))
+    expect(rock.parent).toBe(music)
+    expect(rock.tracks.length).toBe(1)
+    expect(rock.folders[0].name).toBe('Live')
+    expect(rock.folders[0].trackCount).toBe(2)
+
+    expect((await call('/library/browse?path=' + encodeURIComponent(dir))).status).toBe(400)
+    expect((await call('/library/browse?path=' + encodeURIComponent(join(music, '..')))).status).toBe(400)
+  })
+})
+
 describe('search', () => {
   test('normalises Persian/Arabic letters and digits', () => {
     expect(normalizeText('كتاب يك ۱۲۳')).toBe(normalizeText('کتاب یک 123'))
