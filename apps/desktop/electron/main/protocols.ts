@@ -14,7 +14,7 @@ export const APP_ORIGIN = `${APP_SCHEME}://renderer`
 export function registerSchemes(): void {
   protocol.registerSchemesAsPrivileged([
     { scheme: APP_SCHEME, privileges: { standard: true, secure: true, supportFetchAPI: true } },
-    { scheme: MEDIA_SCHEME, privileges: { standard: true, secure: true, supportFetchAPI: true, stream: true, bypassCSP: false } },
+    { scheme: MEDIA_SCHEME, privileges: { standard: true, secure: true, supportFetchAPI: true, stream: true, corsEnabled: true } },
   ])
 }
 
@@ -80,7 +80,11 @@ export function handleMediaProtocol(api: ApiHandle): void {
         const { path } = (await res.json()) as { path: string }
         return await serveAudioFile(path, request.headers.get('range'))
       }
-      return await fetch(`${api.baseUrl}/artwork/${target.key}`, { headers: auth })
+      const art = await fetch(`${api.baseUrl}/artwork/${target.key}`, { headers: auth })
+      // Allow the renderer to read artwork pixels (used to tint the player bar from the cover).
+      const headers = new Headers(art.headers)
+      headers.set('access-control-allow-origin', '*')
+      return new Response(art.body, { status: art.status, headers })
     } catch {
       return new Response('Unavailable', { status: 502 })
     }
