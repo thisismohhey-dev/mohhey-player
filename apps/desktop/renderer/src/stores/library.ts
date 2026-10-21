@@ -61,19 +61,8 @@ export const useLibraryStore = defineStore('library', () => {
     poll()
   }
 
-  async function createPlaylist(name: string): Promise<Playlist | null> {
-    try {
-      const p = await api.playlists.create(name)
-      await refreshPlaylists()
-      return p
-    } catch (e) {
-      ui.toast(e instanceof ApiClientError ? e.message : t('Couldn’t create the playlist.'), 'error')
-      return null
-    }
-  }
-
   return {
     folders, playlists, scan, loaded, revision, hasLibrary, isScanning,
-    load, addFolder, removeFolder, rescan, refreshFolders, refreshPlaylists, createPlaylist,
+    load, addFolder, removeFolder, rescan, refreshFolders, refreshPlaylists,
   }
 })
