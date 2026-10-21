@@ -41,7 +41,7 @@ function loadWindowState(): WindowState {
 }
 
 /** Mini-player mode: a small always-on-top window. The app leaves the taskbar and lives in the tray while it is active. */
-const MINI_SIZE = { width: 360, height: 84 }
+const MINI_SIZE = { width: 400, height: 108 }
 const DEFAULT_TRAY_LABELS: TrayLabels = { show: 'Show Mohhey', playPause: 'Play / Pause', next: 'Next', previous: 'Previous', quit: 'Quit', tooltip: 'Mohhey Player' }
 let beforeMini: { bounds: Electron.Rectangle; maximized: boolean } | null = null
 
