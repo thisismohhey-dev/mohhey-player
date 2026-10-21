@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import BrandMark from '@/components/BrandMark.vue'
 import { computed } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { Disc3, FolderTree, Heart, House, Mic2, Music, Pencil, Plus, Settings, Trash2 } from 'lucide-vue-next'
@@ -52,9 +53,7 @@ const openedPlaylist = computed(() => (route.name === 'playlist' ? Number(route.
   >
     <div class="drag h-[var(--titlebar-h)] shrink-0" :class="isMac && !collapsed && 'pl-20'" />
     <div class="pb-5 pt-2" :class="collapsed ? 'text-center' : 'px-6'">
-      <div dir="ltr" class="font-display font-bold leading-none tracking-tight" :class="collapsed ? 'text-[24px]' : 'text-[28px]'">
-        {{ collapsed ? 'M' : 'Mohhey' }}<span class="text-brand">.</span>
-      </div>
+      <BrandMark :size="collapsed ? 30 : 40" />
     </div>
 
     <nav class="flex-1 overflow-y-auto overflow-x-hidden pb-4" :class="collapsed ? 'flex flex-col items-center px-2' : 'px-3'" :aria-label="t('Library')">
