@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Heart, ListMusic, Maximize2, TriangleAlert } from 'lucide-vue-next'
+import { Heart, ListMusic, Maximize2, PictureInPicture2, TriangleAlert } from 'lucide-vue-next'
 import { t } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import { usePlayerStore } from '@/stores/player'
@@ -56,6 +56,10 @@ const ui = useUiStore()
       <div class="flex items-center justify-end gap-1">
         <div class="lg:hidden"><TransportControls /></div>
         <div class="hidden xl:block"><VolumeControl /></div>
+        <button
+          class="grid size-10 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-foreground/8 hover:text-foreground"
+          aria-label="Mini player" title="Mini player (Ctrl+Shift+M)" @click="ui.setMiniMode(true)"
+        ><PictureInPicture2 class="size-5" /></button>
         <button
           :class="cn('grid size-10 place-items-center rounded-full transition-colors hover:bg-foreground/8', ui.queueOpen ? 'bg-foreground/8 text-brand' : 'text-muted-foreground hover:text-foreground')"
           :aria-label="t('player.queue')" :aria-pressed="ui.queueOpen" :title="t('player.queue')" @click="ui.queueOpen = !ui.queueOpen"
