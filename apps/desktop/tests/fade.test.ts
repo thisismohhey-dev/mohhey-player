@@ -11,7 +11,7 @@ describe('AudioEngine fades', () => {
 
   test('fades the element volume to zero and back to the user volume', async () => {
     const audio = fakeAudio()
-    const engine = new AudioEngine(noop, audio)
+    const engine = new AudioEngine(noop, { decks: [audio, fakeAudio()], useGraph: false })
     engine.setVolume(0.8)
     expect(audio.volume).toBeCloseTo(0.8)
 
@@ -30,7 +30,7 @@ describe('AudioEngine fades', () => {
   })
 
   test('a newer fade or setGain cancels the running one', async () => {
-    const engine = new AudioEngine(noop, fakeAudio())
+    const engine = new AudioEngine(noop, { decks: [fakeAudio(), fakeAudio()], useGraph: false })
     const first = engine.fade(0, 500)
     await vi.advanceTimersByTimeAsync(50)
     engine.setGain(1)
@@ -40,7 +40,7 @@ describe('AudioEngine fades', () => {
 
   test('user volume changes keep the current fade position', async () => {
     const audio = fakeAudio()
-    const engine = new AudioEngine(noop, audio)
+    const engine = new AudioEngine(noop, { decks: [audio, fakeAudio()], useGraph: false })
     engine.setGain(0)
     engine.setVolume(0.5)
     expect(audio.volume).toBe(0)
