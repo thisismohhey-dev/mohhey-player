@@ -1,6 +1,7 @@
 import { Elysia } from 'elysia'
 import type { ApiError } from '@mohhey/contracts'
 import { browseRoutes } from './modules/library/browse'
+import { markDuplicates } from './modules/library/dedupe'
 import { duplicatesRoutes } from './modules/library/duplicates'
 import { lyricsRoutes } from './modules/lyrics/routes'
 import { libraryRoutes } from './modules/library/routes'
@@ -28,6 +29,7 @@ const errorBody = (code: ApiError['code'], message: string): ApiError => ({ code
 export function createApp({ config, db, metadataReader }: AppDeps) {
   const tracks = new TracksRepo(db)
   const scanner = new LibraryScanner(db, config.artworkDir, metadataReader)
+  markDuplicates(db) // apply the rule to libraries scanned before it existed
 
   return new Elysia()
     // The API binds to loopback, but loopback alone is not a security boundary: every request needs the per-launch token.

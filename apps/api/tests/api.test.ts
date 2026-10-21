@@ -82,10 +82,10 @@ describe('security', () => {
 
 describe('library scan', () => {
   test('scans, is idempotent, reports broken files without aborting', async () => {
-    writeFileSync(join(music, 'Adele - Hello.mp3'), 'x')
-    writeFileSync(join(music, 'Adele - Skyfall.flac'), 'x')
-    writeFileSync(join(music, 'broken.mp3'), 'x')
-    writeFileSync(join(music, 'notes.txt'), 'x')
+    writeFileSync(join(music, 'Adele - Hello.mp3'), 'x' + join(music, 'Adele - Hello.mp3'))
+    writeFileSync(join(music, 'Adele - Skyfall.flac'), 'x' + join(music, 'Adele - Skyfall.flac'))
+    writeFileSync(join(music, 'broken.mp3'), 'x' + join(music, 'broken.mp3'))
+    writeFileSync(join(music, 'notes.txt'), 'x' + join(music, 'notes.txt'))
     expect((await addFolder()).status).toBe(201)
     let s = await scan()
     expect(s.state).toBe('done')
@@ -105,8 +105,8 @@ describe('library scan', () => {
 
   test('deleted files become missing; moved files are re-linked keeping id and favorite', async () => {
     const a = join(music, 'Adele - Hello.mp3')
-    writeFileSync(a, 'x')
-    writeFileSync(join(music, 'Queen - Bohemian.mp3'), 'x')
+    writeFileSync(a, 'x' + a)
+    writeFileSync(join(music, 'Queen - Bohemian.mp3'), 'x' + join(music, 'Queen - Bohemian.mp3'))
     await addFolder(); await scan()
     const { items } = await json(call('/tracks?q=hello'))
     const id = items[0].id
@@ -124,7 +124,7 @@ describe('library scan', () => {
   })
 
   test('removing a folder removes its tracks and orphan albums', async () => {
-    writeFileSync(join(music, 'Adele - Hello.mp3'), 'x')
+    writeFileSync(join(music, 'Adele - Hello.mp3'), 'x' + join(music, 'Adele - Hello.mp3'))
     const { items } = await json(addFolder())
     await scan()
     await call(`/library/folders/${items[0].id}`, { method: 'DELETE' })
@@ -136,10 +136,10 @@ describe('library scan', () => {
 describe('folder browsing', () => {
   test('lists subfolders and direct tracks, blocks paths outside the library', async () => {
     mkdirSync(join(music, 'Rock', 'Live'), { recursive: true })
-    writeFileSync(join(music, 'Intro.mp3'), 'x')
-    writeFileSync(join(music, 'Rock', 'A - One.mp3'), 'x')
-    writeFileSync(join(music, 'Rock', 'Live', 'A - Two.mp3'), 'x')
-    writeFileSync(join(music, 'Rock', 'Live', 'A - Three.mp3'), 'x')
+    writeFileSync(join(music, 'Intro.mp3'), 'x' + join(music, 'Intro.mp3'))
+    writeFileSync(join(music, 'Rock', 'A - One.mp3'), 'x' + join(music, 'Rock', 'A - One.mp3'))
+    writeFileSync(join(music, 'Rock', 'Live', 'A - Two.mp3'), 'x' + join(music, 'Rock', 'Live', 'A - Two.mp3'))
+    writeFileSync(join(music, 'Rock', 'Live', 'A - Three.mp3'), 'x' + join(music, 'Rock', 'Live', 'A - Three.mp3'))
     await addFolder(); await scan()
 
     const roots = await json(call('/library/browse'))
@@ -168,8 +168,8 @@ describe('search', () => {
     expect(normalizeText('Beyoncé')).toBe('beyonce')
   })
   test('finds Persian and English, escapes LIKE wildcards', async () => {
-    writeFileSync(join(music, 'محسن - دلتنگی.mp3'), 'x')
-    writeFileSync(join(music, 'Adele - 100% Pure.mp3'), 'x')
+    writeFileSync(join(music, 'محسن - دلتنگی.mp3'), 'x' + join(music, 'محسن - دلتنگی.mp3'))
+    writeFileSync(join(music, 'Adele - 100% Pure.mp3'), 'x' + join(music, 'Adele - 100% Pure.mp3'))
     await addFolder(); await scan()
     expect((await json(call('/tracks?q=' + encodeURIComponent('دلتنگي')))).total).toBe(1)
     expect((await json(call('/tracks?q=adele%20hello'))).total).toBe(0)
@@ -182,7 +182,7 @@ describe('search', () => {
 
 describe('playlists, favorites, history, settings', () => {
   const seed = async () => {
-    for (const n of ['A - One', 'A - Two', 'A - Three']) writeFileSync(join(music, `${n}.mp3`), 'x')
+    for (const n of ['A - One', 'A - Two', 'A - Three']) writeFileSync(join(music, `${n}.mp3`), 'x' + join(music, `${n}.mp3`))
     await addFolder(); await scan()
     return (await json(call('/tracks?sort=title'))).items as { id: number; title: string }[]
   }

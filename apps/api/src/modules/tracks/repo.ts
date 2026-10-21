@@ -62,7 +62,7 @@ export class TracksRepo {
 
   list(input: TrackQuery): Paged<Track> {
     const q = TrackQuerySchema.parse(input)
-    const where: string[] = ['t.missing = 0']
+    const where: string[] = ['t.missing = 0', 't.dup_hidden = 0']
     const params: (string | number)[] = []
     const s = searchClause(q.q)
     if (s.sql) { where.push(s.sql); params.push(...s.params) }
@@ -128,7 +128,7 @@ export class TracksRepo {
     const s = searchClause(q, "(al.title_norm || ' ' || COALESCE(ar.name_norm, ''))")
     const where = s.sql ? `AND ${s.sql}` : ''
     const base = `FROM albums al LEFT JOIN artists ar ON ar.id = al.artist_id
-      JOIN tracks t ON t.album_id = al.id AND t.missing = 0 WHERE 1=1 ${where}`
+      JOIN tracks t ON t.album_id = al.id AND t.missing = 0 AND t.dup_hidden = 0 WHERE 1=1 ${where}`
     const total = this.db.query<{ n: number }, string[]>(`SELECT COUNT(DISTINCT al.id) AS n ${base}`).get(...s.params)?.n ?? 0
     const rows = this.db.query<AggRow, (string | number)[]>(
       `SELECT al.id, al.title, ar.name AS artist, al.year, COUNT(t.id) AS n, SUM(t.duration_ms) AS dur, MAX(t.artwork_hash) AS art
@@ -140,7 +140,7 @@ export class TracksRepo {
   album(id: number): Album | null {
     const r = this.db.query<AggRow, [number]>(
       `SELECT al.id, al.title, ar.name AS artist, al.year, COUNT(t.id) AS n, COALESCE(SUM(t.duration_ms),0) AS dur, MAX(t.artwork_hash) AS art
-       FROM albums al LEFT JOIN artists ar ON ar.id = al.artist_id LEFT JOIN tracks t ON t.album_id = al.id AND t.missing = 0
+       FROM albums al LEFT JOIN artists ar ON ar.id = al.artist_id LEFT JOIN tracks t ON t.album_id = al.id AND t.missing = 0 AND t.dup_hidden = 0
        WHERE al.id = ? GROUP BY al.id`,
     ).get(id)
     return r ? mapAlbum(r) : null
@@ -149,7 +149,7 @@ export class TracksRepo {
   artists(q: string | undefined, limit: number, offset: number): Paged<Artist> {
     const s = searchClause(q, 'ar.name_norm')
     const where = s.sql ? `AND ${s.sql}` : ''
-    const base = `FROM artists ar JOIN tracks t ON t.artist_id = ar.id AND t.missing = 0 WHERE 1=1 ${where}`
+    const base = `FROM artists ar JOIN tracks t ON t.artist_id = ar.id AND t.missing = 0 AND t.dup_hidden = 0 WHERE 1=1 ${where}`
     const total = this.db.query<{ n: number }, string[]>(`SELECT COUNT(DISTINCT ar.id) AS n ${base}`).get(...s.params)?.n ?? 0
     const rows = this.db.query<ArtistRow, (string | number)[]>(
       `SELECT ar.id, ar.name, COUNT(t.id) AS n, COUNT(DISTINCT t.album_id) AS albums, MAX(t.artwork_hash) AS art
@@ -161,7 +161,7 @@ export class TracksRepo {
   artist(id: number): Artist | null {
     const r = this.db.query<ArtistRow, [number]>(
       `SELECT ar.id, ar.name, COUNT(t.id) AS n, COUNT(DISTINCT t.album_id) AS albums, MAX(t.artwork_hash) AS art
-       FROM artists ar LEFT JOIN tracks t ON t.artist_id = ar.id AND t.missing = 0 WHERE ar.id = ? GROUP BY ar.id`,
+       FROM artists ar LEFT JOIN tracks t ON t.artist_id = ar.id AND t.missing = 0 AND t.dup_hidden = 0 WHERE ar.id = ? GROUP BY ar.id`,
     ).get(id)
     return r ? mapArtist(r) : null
   }

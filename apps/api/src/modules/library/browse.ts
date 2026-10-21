@@ -20,7 +20,7 @@ export function browse(db: Db, tracks: TracksRepo, rawPath: string): BrowseResul
     const counts = roots.map((root) => {
       const prefix = trimSep(root) + sep
       const n = db.query<{ n: number }, [string]>(
-        `SELECT COUNT(*) AS n FROM tracks WHERE missing = 0 AND path LIKE ? ESCAPE '\\'`,
+        `SELECT COUNT(*) AS n FROM tracks WHERE missing = 0 AND dup_hidden = 0 AND path LIKE ? ESCAPE '\\'`,
       ).get(`${escapeLike(prefix)}%`)?.n ?? 0
       return { name: root.split(sep).filter(Boolean).pop() ?? root, path: root, trackCount: n }
     })
@@ -40,11 +40,11 @@ export function browse(db: Db, tracks: TracksRepo, rawPath: string): BrowseResul
   const rel = `substr(path, ${prefix.length + 1})`
   const rows = db.query<{ name: string; n: number }, [string]>(
     `SELECT substr(${rel}, 1, instr(${rel}, '${sepLiteral}') - 1) AS name, COUNT(*) AS n
-     FROM tracks WHERE missing = 0 AND path LIKE ? ESCAPE '\\' AND instr(${rel}, '${sepLiteral}') > 0
+     FROM tracks WHERE missing = 0 AND dup_hidden = 0 AND path LIKE ? ESCAPE '\\' AND instr(${rel}, '${sepLiteral}') > 0
      GROUP BY name ORDER BY name COLLATE NOCASE`,
   ).all(like)
   const ids = db.query<{ id: number }, [string]>(
-    `SELECT id FROM tracks WHERE missing = 0 AND path LIKE ? ESCAPE '\\' AND instr(${rel}, '${sepLiteral}') = 0
+    `SELECT id FROM tracks WHERE missing = 0 AND dup_hidden = 0 AND path LIKE ? ESCAPE '\\' AND instr(${rel}, '${sepLiteral}') = 0
      ORDER BY file_name COLLATE NOCASE`,
   ).all(like).map((r) => r.id)
 

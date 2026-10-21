@@ -62,7 +62,7 @@ describe('mojibake repair', () => {
 
 describe('resume position', () => {
   test('stores a position per track and returns it with the track', async () => {
-    writeFileSync(join(music, 'A - Long Talk.mp3'), 'x')
+    writeFileSync(join(music, 'A - Long Talk.mp3'), 'x' + join(music, 'A - Long Talk.mp3'))
     await addFolder(); await scan()
     const t = await track('long talk')
     expect(t.resumeMs).toBe(0)
@@ -78,7 +78,7 @@ describe('resume position', () => {
 describe('non-destructive metadata editing', () => {
   test('edits survive a rescan until reset; the file is never touched', async () => {
     const f = join(music, 'Aurora - Hello.mp3')
-    writeFileSync(f, 'x')
+    writeFileSync(f, 'x' + f)
     await addFolder(); await scan()
     const t = await track('hello')
     const res = await json(call(`/tracks/${t.id}/metadata`, { method: 'PATCH', body: JSON.stringify({ title: 'Hello (Fixed)', artist: 'Aurora Vale', album: 'Glass Hours' }) }))
@@ -129,9 +129,9 @@ describe('lyrics', () => {
   })
 
   test('serves a sidecar .lrc next to the audio file, 404 when there is none', async () => {
-    writeFileSync(join(music, 'A - Song.mp3'), 'x')
+    writeFileSync(join(music, 'A - Song.mp3'), 'x' + join(music, 'A - Song.mp3'))
     writeFileSync(join(music, 'A - Song.lrc'), '[00:01.00]Hello\n[00:03.00]World')
-    writeFileSync(join(music, 'B - Silent.mp3'), 'x')
+    writeFileSync(join(music, 'B - Silent.mp3'), 'x' + join(music, 'B - Silent.mp3'))
     await addFolder(); await scan()
     const t = await track('song')
     const l = await json(call(`/tracks/${t.id}/lyrics`))
@@ -143,7 +143,7 @@ describe('lyrics', () => {
 
 describe('loudness and audio settings', () => {
   test('stores a measured gain and exposes it; settings accept EQ / crossfade / rate', async () => {
-    writeFileSync(join(music, 'A - Quiet.mp3'), 'x')
+    writeFileSync(join(music, 'A - Quiet.mp3'), 'x' + join(music, 'A - Quiet.mp3'))
     await addFolder(); await scan()
     const t = await track('quiet')
     expect(t.gainDb).toBeNull()

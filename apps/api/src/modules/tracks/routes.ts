@@ -2,6 +2,7 @@ import { Elysia } from 'elysia'
 import { z } from 'zod'
 import { GainBodySchema, MetadataEditSchema, PositionBodySchema, TrackQuerySchema } from '@mohhey/contracts'
 import type { Db } from '../../shared/db'
+import { markDuplicates } from '../library/dedupe'
 import { editMetadata, resetMetadata } from './edit'
 import { notFound } from '../../shared/errors'
 import type { TracksRepo } from './repo'
@@ -43,10 +44,12 @@ export const tracksRoutes = (repo: TracksRepo, db: Db) =>
     }, { params: IdParams, body: GainBodySchema })
     .patch('/tracks/:id/metadata', ({ params, body }) => {
       if (!editMetadata(db, params.id, body)) throw notFound('Track')
+      markDuplicates(db) // an edited title/artist can make a song match (or stop matching) another copy
       return orNotFound(repo.get(params.id), 'Track')
     }, { params: IdParams, body: MetadataEditSchema })
     .post('/tracks/:id/metadata/reset', ({ params }) => {
       if (!resetMetadata(db, params.id)) throw notFound('Track')
+      markDuplicates(db)
       return orNotFound(repo.get(params.id), 'Track')
     }, { params: IdParams })
     .post('/tracks/:id/missing', ({ params }) => { repo.markMissing(params.id); return { ok: true } }, { params: IdParams })

@@ -103,6 +103,16 @@ export const MIGRATIONS: Migration[] = [
       UPDATE tracks SET mtime_ms = 0;
     `,
   },
+  {
+    version: 4,
+    name: 'hide_duplicates',
+    sql: `
+      -- 1 = a lower-quality copy of a song that exists elsewhere in the library; 2 = a single file opened from outside the
+      -- library. Both are hidden from every list (see dedupe.ts).
+      ALTER TABLE tracks ADD COLUMN dup_hidden INTEGER NOT NULL DEFAULT 0;
+      CREATE INDEX idx_tracks_dup_hidden ON tracks(dup_hidden) WHERE dup_hidden = 1;
+    `,
+  },
 ]
 
 export function openDatabase(path: string, migrations: Migration[] = MIGRATIONS): Database {
