@@ -32,15 +32,40 @@ win:
   artifactName: Mohhey-Player-Setup-${version}.${ext}
 
 nsis:
+  # A step-by-step wizard: welcome > licence > install folder > install > finish. Nothing is pre-decided for the user.
   oneClick: false
   perMachine: false
+  # No elevation prompt: the app installs for the current user only, so the installer never needs administrator rights.
+  allowElevation: false
   allowToChangeInstallationDirectory: true
   createDesktopShortcut: true
   createStartMenuShortcut: true
   shortcutName: Mohhey Player
   uninstallDisplayName: Mohhey Player
-  # User data (library database, artwork cache) is kept on uninstall unless the user opts in.
+  runAfterFinish: true
+  installerIcon: resources/icon.ico
+  uninstallerIcon: resources/icon.ico
+  installerHeaderIcon: resources/icon.ico
+  installerSidebar: resources/installer/sidebar.bmp
+  uninstallerSidebar: resources/installer/sidebar.bmp
+  installerHeader: resources/installer/header.bmp
+  license: resources/installer/license.txt
+  include: resources/installer/installer.nsh
+  multiLanguageInstaller: true
+  # Persian is added by hand in installer.nsh (electron-builder maps fa to a language file this NSIS version lacks).
+  installerLanguages: [en_US]
+  # The installer's own data prompt (installer.nsh) asks before touching %APPDATA%Mohhey Player.
   deleteAppDataOnUninstall: false
+
+# Hardened Electron binary: no Node mode, no inspector/NODE_OPTIONS, app only from the integrity-checked asar.
+electronFuses:
+  runAsNode: false
+  enableCookieEncryption: true
+  enableNodeOptionsEnvironmentVariable: false
+  enableNodeCliInspectArguments: false
+  enableEmbeddedAsarIntegrityValidation: true
+  onlyLoadAppFromAsar: true
+  grantFileProtocolExtraPrivileges: false
 
 mac:
   target: dmg
