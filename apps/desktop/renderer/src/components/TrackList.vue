@@ -176,7 +176,12 @@ const isCurrent = (id: number) => player.current?.id === id
               >
                 <Heart class="size-4" :class="track.favorite && 'fill-current'" />
               </button>
-              <span class="text-end text-[13px] tabular text-muted-foreground">{{ formatTime(track.durationMs) }}</span>
+              <span class="flex flex-col items-end gap-1 text-[13px] tabular text-muted-foreground">
+                {{ formatTime(track.durationMs) }}
+                <span v-if="track.resumeMs > 0 && track.durationMs >= 600000" class="block h-[3px] w-10 overflow-hidden rounded-full bg-foreground/12" :title="t('Resume at {time}', { time: formatTime(track.resumeMs) })">
+                  <span class="block h-full rounded-full bg-brand" :style="{ width: Math.min(100, (track.resumeMs / track.durationMs) * 100) + '%' }" />
+                </span>
+              </span>
               <button
                 class="grid size-8 place-items-center rounded-full text-muted-foreground opacity-0 hover:bg-foreground/8 hover:text-foreground group-hover:opacity-100 group-focus-within:opacity-100"
                 :aria-label="t('More actions')" @click.stop="openMenu"
