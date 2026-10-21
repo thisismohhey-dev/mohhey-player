@@ -11,6 +11,7 @@ export const router = createRouter({
     { path: '/albums/:id(\\d+)', name: 'album', component: () => import('@/pages/AlbumPage.vue'), props: true },
     { path: '/artists', name: 'artists', component: () => import('@/pages/ArtistsPage.vue') },
     { path: '/artists/:id(\\d+)', name: 'artist', component: () => import('@/pages/ArtistPage.vue'), props: true },
+    { path: '/folders', name: 'folders', component: () => import('@/pages/FoldersPage.vue') },
     { path: '/favorites', name: 'favorites', component: () => import('@/pages/FavoritesPage.vue') },
     { path: '/playlists', name: 'playlists', component: () => import('@/pages/PlaylistsPage.vue') },
     { path: '/playlists/:id(\\d+)', name: 'playlist', component: () => import('@/pages/PlaylistPage.vue'), props: true },
