@@ -1,0 +1,138 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@font-face { font-family: "Montreal"; src: url("../assets/fonts/Montreal-Regular.ttf") format("truetype"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Montreal"; src: url("../assets/fonts/Montreal-Medium.ttf") format("truetype"); font-weight: 500; font-display: swap; }
+@font-face { font-family: "Montreal"; src: url("../assets/fonts/Montreal-Bold.otf") format("opentype"); font-weight: 700; font-display: swap; }
+@font-face { font-family: "Inter"; src: url("../assets/fonts/Inter-Variable.ttf") format("truetype"); font-weight: 100 900; font-display: swap; }
+@font-face { font-family: "Geist Mono"; src: url("../assets/fonts/GeistMono-Variable.ttf") format("truetype"); font-weight: 100 900; font-display: swap; }
+
+@custom-variant dark (&:is(.dark *));
+
+/* ───────────────────────── Design tokens ─────────────────────────
+   Warm paper surfaces, near-black ink, one vermilion accent.
+   Names follow shadcn's contract so ui/* components pick them up. */
+:root {
+  --radius: 1.25rem;
+
+  --background: #f4f2ee;
+  --foreground: #171614;
+  --surface: #fbfaf8;
+  --card: #ffffff;
+  --card-foreground: #171614;
+  --popover: #ffffff;
+  --popover-foreground: #171614;
+  --primary: #171614;
+  --primary-foreground: #fbfaf8;
+  --secondary: #ebe8e2;
+  --secondary-foreground: #171614;
+  --muted: #ebe8e2;
+  --muted-foreground: #6f6b63;
+  --accent: #ebe8e2;
+  --accent-foreground: #171614;
+  --brand: #ff5b2e;
+  --brand-foreground: #ffffff;
+  --destructive: #d92d20;
+  --border: rgb(23 22 20 / 0.09);
+  --input: rgb(23 22 20 / 0.14);
+  --ring: #ff5b2e;
+
+  --shadow-card: 0 1px 2px rgb(23 22 20 / 0.04), 0 8px 24px -8px rgb(23 22 20 / 0.12);
+  --shadow-float: 0 2px 6px rgb(23 22 20 / 0.06), 0 24px 48px -12px rgb(23 22 20 / 0.22);
+  --sidebar-bg: rgb(251 250 248 / 0.72);
+  --titlebar-h: 44px;
+}
+
+.dark {
+  --background: #0e0e0d;
+  --foreground: #f3f1ec;
+  --surface: #151514;
+  --card: #1c1c1a;
+  --card-foreground: #f3f1ec;
+  --popover: #1c1c1a;
+  --popover-foreground: #f3f1ec;
+  --primary: #f3f1ec;
+  --primary-foreground: #0e0e0d;
+  --secondary: #262624;
+  --secondary-foreground: #f3f1ec;
+  --muted: #262624;
+  --muted-foreground: #9a968d;
+  --accent: #262624;
+  --accent-foreground: #f3f1ec;
+  --brand: #ff7a4d;
+  --brand-foreground: #1a0d07;
+  --destructive: #f4695d;
+  --border: rgb(243 241 236 / 0.09);
+  --input: rgb(243 241 236 / 0.16);
+  --ring: #ff7a4d;
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px -8px rgb(0 0 0 / 0.6);
+  --shadow-float: 0 2px 6px rgb(0 0 0 / 0.4), 0 24px 48px -12px rgb(0 0 0 / 0.7);
+  --sidebar-bg: rgb(21 21 20 / 0.72);
+}
+
+@theme inline {
+  --font-sans: "Inter", "Vazirmatn", "Segoe UI", system-ui, sans-serif;
+  --font-display: "Montreal", "Inter", "Vazirmatn", system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-brand: var(--brand);
+  --color-brand-foreground: var(--brand-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-sm: calc(var(--radius) - 12px);
+  --radius-md: calc(var(--radius) - 8px);
+  --radius-lg: calc(var(--radius) - 4px);
+  --radius-xl: var(--radius);
+  --radius-2xl: calc(var(--radius) + 8px);
+
+  --shadow-card: var(--shadow-card);
+  --shadow-float: var(--shadow-float);
+}
+
+@layer base {
+  * { @apply border-border outline-ring/50; }
+  html, body, #app { height: 100%; }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: "ss01", "cv11";
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  h1, h2, h3, .font-display { font-family: var(--font-display); letter-spacing: -0.02em; }
+  input, [contenteditable] { user-select: text; }
+  :focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; border-radius: 6px; }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 999px; border: 3px solid transparent; background-clip: content-box; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--input); background-clip: content-box; border: 3px solid transparent; }
+}
+
+@layer utilities {
+  .drag { -webkit-app-region: drag; }
+  .no-drag { -webkit-app-region: no-drag; }
+  .tabular { font-variant-numeric: tabular-nums; font-family: var(--font-mono); font-size: 0.8em; letter-spacing: 0; }
+  .shadow-card { box-shadow: var(--shadow-card); }
+  .shadow-float { box-shadow: var(--shadow-float); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; scroll-behavior: auto !important; }
+}
