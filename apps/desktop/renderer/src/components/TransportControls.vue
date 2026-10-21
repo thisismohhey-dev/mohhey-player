@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { Loader2, Pause, Play, Repeat, Repeat1, Shuffle, SkipBack, SkipForward } from 'lucide-vue-next'
+import { Loader2, Pause, Play, Repeat, Repeat1, RotateCcw, RotateCw, Shuffle, SkipBack, SkipForward } from 'lucide-vue-next'
 import { t } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import { usePlayerStore } from '@/stores/player'
@@ -14,6 +14,10 @@ const side = 'grid place-items-center rounded-full text-muted-foreground transit
 
 <template>
   <div dir="ltr" class="flex items-center justify-center" :class="size === 'lg' ? 'gap-5' : 'gap-3'">
+    <!-- long tracks (podcasts, audiobooks) get quick jump buttons -->
+    <button v-if="player.currentIsLong" :class="cn(side, 'relative size-9')" :aria-label="t('Back 15 seconds')" :title="t('Back 15 seconds')" @click="player.skipBy(-15000)">
+      <RotateCcw class="size-[22px]" :stroke-width="1.6" /><span class="absolute text-[8px] font-bold leading-none">15</span>
+    </button>
     <button :class="cn(side, 'size-9', player.shuffle && 'text-brand hover:text-brand')" :aria-label="t('player.shuffle')" :aria-pressed="player.shuffle" :title="t('player.shuffle')" @click="player.toggleShuffle()">
       <Shuffle class="size-[18px]" />
     </button>
@@ -36,6 +40,9 @@ const side = 'grid place-items-center rounded-full text-muted-foreground transit
     <button :class="cn(side, 'size-9', player.repeat !== 'off' && 'text-brand hover:text-brand')" :aria-label="repeatLabel" :aria-pressed="player.repeat !== 'off'" :title="repeatLabel" @click="player.cycleRepeat()">
       <Repeat1 v-if="player.repeat === 'one'" class="size-[18px]" />
       <Repeat v-else class="size-[18px]" />
+    </button>
+    <button v-if="player.currentIsLong" :class="cn(side, 'relative size-9')" :aria-label="t('Forward 30 seconds')" :title="t('Forward 30 seconds')" @click="player.skipBy(30000)">
+      <RotateCw class="size-[22px]" :stroke-width="1.6" /><span class="absolute text-[8px] font-bold leading-none">30</span>
     </button>
   </div>
 </template>
