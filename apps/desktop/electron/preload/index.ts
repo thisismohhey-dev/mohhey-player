@@ -12,6 +12,8 @@ const listen = <T>(channel: string, cb: (value: T) => void): (() => void) => {
 const bridge: DesktopBridge = {
   getApiConfig: () => ipcRenderer.invoke('api:get-config'),
   addLibraryFolder: () => ipcRenderer.invoke('library:add-folder'),
+  takePendingOpen: () => ipcRenderer.invoke('app:take-pending-open'),
+  onOpenTracks: (cb) => listen('app:open-tracks', cb),
   openLink: (page) => ipcRenderer.send('app:open-link', page),
   windowControl: (action) => ipcRenderer.send('window:control', action),
   onMaximizeChange: (cb) => listen('window:maximized', cb),

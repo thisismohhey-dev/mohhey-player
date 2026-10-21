@@ -28,6 +28,16 @@ const mainScroll = ref<HTMLElement>()
 provide('mainScroll', mainScroll)
 const fatal = ref<string | null>(null)
 
+/** Files the OS asked us to open (double-click on an audio file): play them right away. */
+async function playOpened(ids: number[]): Promise<void> {
+  if (!ids.length) return
+  try {
+    const found = new Map((await api.tracks.byIds(ids)).map((x) => [x.id, x]))
+    const tracks = ids.flatMap((id) => found.get(id) ?? [])
+    if (tracks.length) player.playTracks(tracks, 0)
+  } catch { /* the file could not be read; nothing to play */ }
+}
+
 async function boot(): Promise<void> {
   fatal.value = null
   try {
@@ -38,6 +48,7 @@ async function boot(): Promise<void> {
     await Promise.all([library.load(), player.init()])
     // Pick up files added or changed since the last run (unchanged files are skipped, so this is quick).
     if (library.hasLibrary && !library.isScanning) void library.rescan()
+    void window.mohhey.takePendingOpen().then(playOpened).catch(() => undefined)
   } catch (e) {
     fatal.value = e instanceof Error ? e.message : 'The library service is not available.'
   }
@@ -66,6 +77,7 @@ const onScheme = () => { if (ui.theme === 'system') ui.applyTheme() }
 onMounted(() => {
   // The tray (main process) can leave mini mode or issue playback commands on its own.
   offs.push(window.mohhey.onMiniChange((mini) => { ui.miniMode = mini }))
+  offs.push(window.mohhey.onOpenTracks((ids) => { void playOpened(ids) }))
   offs.push(window.mohhey.onTrayCommand((cmd) => { if (cmd === 'play-pause') void player.togglePlay(); else if (cmd === 'next') player.next(); else player.previous() }))
   void boot(); window.addEventListener('keydown', onKey); media.addEventListener('change', onScheme) })
 onBeforeUnmount(() => { offs.forEach((off) => off()); window.removeEventListener('keydown', onKey); media.removeEventListener('change', onScheme) })

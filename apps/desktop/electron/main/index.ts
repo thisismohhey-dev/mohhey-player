@@ -4,6 +4,7 @@ import { app, BrowserWindow, dialog, ipcMain, screen, shell } from 'electron'
 import type { TrayCommand, TrayLabels, WindowControl } from '@mohhey/contracts'
 import { startApi, type ApiHandle } from './api-process'
 import { findForbiddenSwitch, originOf } from './policy'
+import { audioPathsFromArgv } from './open-files'
 import { migrateLegacyUserData } from './userdata'
 import { APP_ORIGIN, handleAppProtocol, handleMediaProtocol, registerSchemes } from './protocols'
 import { applySecurity, isTrustedSender, lockNavigation } from './security'
@@ -129,13 +130,13 @@ function createWindow(): void {
   mainWindow = win
   lockNavigation(win, allowedOrigin)
   // The renderer's mini-mode flag lives in memory; if the page reloads or crashes, leave mini mode so they can't disagree.
-  win.webContents.on('did-start-loading', () => { if (beforeMini) setMiniMode(win, false) })
+  win.webContents.on('did-start-loading', () => { pageReady = false; if (beforeMini) setMiniMode(win, false) })
   win.on('maximize', () => win.webContents.send('window:maximized', true))
   win.on('unmaximize', () => win.webContents.send('window:maximized', false))
   win.webContents.on('did-finish-load', () => win.webContents.send('window:maximized', win.isMaximized()))
   win.once('ready-to-show', () => { if (state.maximized) win.maximize(); win.show() })
   win.on('close', () => saveWindowState(win))
-  win.on('closed', () => { mainWindow = null })
+  win.on('closed', () => { mainWindow = null; pageReady = false })
   void win.loadURL(rendererUrl)
 }
 
@@ -153,6 +154,13 @@ function registerIpc(): void {
   ipcMain.handle('api:get-config', (e) => {
     if (!isTrustedSender(e, allowedOrigin) || !api) throw new Error('Not available')
     return { baseUrl: api.baseUrl, token: api.token }
+  })
+  ipcMain.handle('app:take-pending-open', (e) => {
+    if (!isTrustedSender(e, allowedOrigin)) throw new Error('Not available')
+    pageReady = true
+    const ids = pendingOpen
+    pendingOpen = []
+    return ids
   })
   // The page can only pick a name; the URLs are fixed here, so it can never make the app open an arbitrary address.
   const LINKS: Record<string, string> = { repo: 'https://github.com/thisismohhey-dev/mohhey-player', profile: 'https://github.com/thisismohhey-dev' }
@@ -182,7 +190,32 @@ function registerIpc(): void {
   })
 }
 
-app.on('second-instance', () => {
+/**
+ * Audio files the OS asked us to open (double-click, "Open with"). The API turns each path into a track id (only this process may
+ * call that route); the ids go to the page, which plays them. Ids wait here until the page has asked for them once.
+ */
+let pendingOpen: number[] = []
+let pageReady = false
+async function openPaths(paths: string[]): Promise<void> {
+  if (!api || !paths.length) return
+  const ids: number[] = []
+  for (const path of paths) {
+    try {
+      const r = await fetch(`${api.baseUrl}/library/open-file`, {
+        method: 'POST',
+        headers: { authorization: `Bearer ${api.token}`, 'x-mohhey-internal': api.internalToken, 'content-type': 'application/json' },
+        body: JSON.stringify({ path }),
+      })
+      if (r.ok) ids.push(((await r.json()) as { id: number }).id)
+    } catch { /* skip files that cannot be opened */ }
+  }
+  if (!ids.length) return
+  if (pageReady && mainWindow) mainWindow.webContents.send('app:open-tracks', ids)
+  else pendingOpen.push(...ids)
+}
+
+app.on('second-instance', (_e, argv) => {
+  void openPaths(audioPathsFromArgv(argv.slice(1)))
   if (!mainWindow) return
   if (mainWindow.isMinimized()) mainWindow.restore()
   mainWindow.focus()
@@ -204,6 +237,7 @@ app.whenReady().then(async () => {
   if (!isDev) handleAppProtocol(join(__dirname, '../renderer'))
   registerIpc()
   createWindow()
+  void openPaths(audioPathsFromArgv(process.argv.slice(1)))
   app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow() })
 })
 

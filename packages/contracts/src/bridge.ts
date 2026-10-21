@@ -12,6 +12,12 @@ export interface DesktopBridge {
    * page code: the main process talks to the library service itself.
    */
   addLibraryFolder(): Promise<{ status: 'added' } | { status: 'cancelled' } | { status: 'error'; message: string }>
+  /**
+   * Tracks the operating system asked the app to open (double-click on an audio file, "Open with"). `takePendingOpen` returns the
+   * ones received before the page was ready; `onOpenTracks` delivers later ones. The page plays them.
+   */
+  takePendingOpen(): Promise<number[]>
+  onOpenTracks(cb: (trackIds: number[]) => void): () => void
   /** Opens the project's GitHub page in the default browser. Only fixed, known pages can be opened. */
   openLink(page: 'repo' | 'profile'): void
   /** Custom title-bar buttons (Windows/Linux; macOS keeps its native traffic lights). */

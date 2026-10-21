@@ -25,6 +25,13 @@ npmRebuild: false
 publish: null
 
 win:
+  # Registers M. Player in "Open with" and in Windows' default-apps list for these types. Windows itself decides the default:
+  # the user picks it once (Settings > Apps > Default apps); an app is not allowed to claim it silently.
+  fileAssociations:
+    - ext: [mp3, flac, wav, ogg, oga, opus, m4a, aac]
+      name: Audio file
+      description: Audio file
+      role: Editor
   target:
     - target: nsis
       arch: [x64]
