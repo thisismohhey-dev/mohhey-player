@@ -12,6 +12,7 @@ import { useLibraryStore } from '@/stores/library'
 import { usePlayerStore } from '@/stores/player'
 import { useUiStore, type ThemeSetting } from '@/stores/ui'
 
+const appVersion = __APP_VERSION__
 const openLink = (page: 'repo' | 'profile'): void => window.mohhey.openLink(page)
 const library = useLibraryStore()
 const player = usePlayerStore()
@@ -227,7 +228,7 @@ const switchCls = (on: boolean) => cn('relative h-6 w-11 shrink-0 rounded-full t
     </section>
     <section v-if="tab === 'about'" id="panel-about" role="tabpanel" aria-labelledby="tab-about" class="mt-6 space-y-5">
       <div class="rounded-2xl bg-card p-6 shadow-card">
-        <h2 class="text-2xl font-medium">M. Player</h2>
+        <h2 class="text-2xl font-medium">M. Player <span class="ms-2 align-middle text-sm font-normal text-muted-foreground tabular" dir="ltr">{{ t('Version') }} {{ appVersion }}</span></h2>
         <p class="mt-3 max-w-2xl text-[15px] leading-relaxed text-muted-foreground">{{ t('A fast, private music player for your own library. It reads the folders you choose, never changes or deletes your files, and never connects to the internet.') }}</p>
         <ul class="mt-4 space-y-1.5 text-sm text-muted-foreground">
           <li>• {{ t('Everything stays on your computer') }}</li>

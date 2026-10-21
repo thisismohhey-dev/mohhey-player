@@ -35,7 +35,7 @@ export const fa: { tree: Messages; literals: Record<string, string>; nouns: Reco
   },
   nouns: { song: 'آهنگ', album: 'آلبوم', artist: 'هنرمند', playlist: 'پلی‌لیست', image: 'تصویر', problem: 'مشکل' },
   literals: {
-    About: 'درباره', 'About the developer': 'درباره‌ی سازنده', 'Project on GitHub': 'پروژه در گیت‌هاب',
+    About: 'درباره', Version: 'نسخه', 'About the developer': 'درباره‌ی سازنده', 'Project on GitHub': 'پروژه در گیت‌هاب',
     'A fast, private music player for your own library. It reads the folders you choose, never changes or deletes your files, and never connects to the internet.': 'یک پخش‌کننده‌ی سریع و خصوصی برای کتابخانه‌ی موسیقی خودت. فقط پوشه‌هایی را که انتخاب می‌کنی می‌خواند، هرگز فایل‌هایت را تغییر نمی‌دهد یا پاک نمی‌کند، و هرگز به اینترنت وصل نمی‌شود.',
     'Persian and English, right-to-left and left-to-right': 'فارسی و انگلیسی، راست‌به‌چپ و چپ‌به‌راست',
     'Equalizer, crossfade, gapless playback, lyrics, sleep timer, mini player': 'اکولایزر، کراس‌فید، پخش بی‌وقفه، متن آهنگ، تایمر خواب، مینی‌پلیر',
