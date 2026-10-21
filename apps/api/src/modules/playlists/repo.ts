@@ -2,14 +2,14 @@ import type { Playlist, Track } from '@mohhey/contracts'
 import type { Db } from '../../shared/db'
 import type { TracksRepo } from '../tracks/repo'
 
-interface PlaylistRow { id: number; name: string; updated_at: number; n: number; dur: number }
+interface PlaylistRow { id: number; name: string; icon: string; updated_at: number; n: number; dur: number }
 
 export class PlaylistsRepo {
   constructor(private db: Db, private tracks: TracksRepo) {}
 
   list(): Playlist[] {
     const rows = this.db.query<PlaylistRow, []>(
-      `SELECT p.id, p.name, p.updated_at, COUNT(t.id) AS n, COALESCE(SUM(t.duration_ms), 0) AS dur
+      `SELECT p.id, p.name, p.icon, p.updated_at, COUNT(t.id) AS n, COALESCE(SUM(t.duration_ms), 0) AS dur
        FROM playlists p
        LEFT JOIN playlist_tracks pt ON pt.playlist_id = p.id
        LEFT JOIN tracks t ON t.id = pt.track_id AND t.missing = 0
@@ -20,7 +20,7 @@ export class PlaylistsRepo {
 
   get(id: number): Playlist | null {
     const r = this.db.query<PlaylistRow, [number]>(
-      `SELECT p.id, p.name, p.updated_at, COUNT(t.id) AS n, COALESCE(SUM(t.duration_ms), 0) AS dur
+      `SELECT p.id, p.name, p.icon, p.updated_at, COUNT(t.id) AS n, COALESCE(SUM(t.duration_ms), 0) AS dur
        FROM playlists p
        LEFT JOIN playlist_tracks pt ON pt.playlist_id = p.id
        LEFT JOIN tracks t ON t.id = pt.track_id AND t.missing = 0
@@ -34,17 +34,20 @@ export class PlaylistsRepo {
       `SELECT DISTINCT t.artwork_hash AS h FROM playlist_tracks pt JOIN tracks t ON t.id = pt.track_id
        WHERE pt.playlist_id = ? AND t.artwork_hash IS NOT NULL ORDER BY pt.position LIMIT 4`,
     ).all(r.id).map((c) => c.h)
-    return { id: r.id, name: r.name, trackCount: r.n, durationMs: r.dur, updatedAt: r.updated_at, coverHashes: covers }
+    return { id: r.id, name: r.name, icon: r.icon as Playlist['icon'], trackCount: r.n, durationMs: r.dur, updatedAt: r.updated_at, coverHashes: covers }
   }
 
-  create(name: string): Playlist {
+  create(name: string, icon: Playlist['icon'] = 'list-music'): Playlist {
     const now = Date.now()
-    const res = this.db.query('INSERT INTO playlists (name, created_at, updated_at) VALUES (?, ?, ?)').run(name, now, now)
+    const res = this.db.query('INSERT INTO playlists (name, icon, created_at, updated_at) VALUES (?, ?, ?, ?)').run(name, icon, now, now)
     return this.get(Number(res.lastInsertRowid))!
   }
 
-  rename(id: number, name: string): boolean {
-    return this.db.query('UPDATE playlists SET name = ?, updated_at = ? WHERE id = ?').run(name, Date.now(), id).changes > 0
+  update(id: number, patch: { name?: string; icon?: Playlist['icon'] }): boolean {
+    const cur = this.get(id)
+    if (!cur) return false
+    this.db.query('UPDATE playlists SET name = ?, icon = ?, updated_at = ? WHERE id = ?').run(patch.name ?? cur.name, patch.icon ?? cur.icon, Date.now(), id)
+    return true
   }
 
   remove(id: number): boolean {
