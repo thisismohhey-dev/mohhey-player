@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/lib/i18n'
 import { computed } from 'vue'
 import { api } from '@/lib/api'
 import { formatLong, plural } from '@/lib/format'
@@ -22,7 +23,7 @@ const source = computed(() => arraySource(data.value?.tracks ?? []))
   <ErrorState v-if="error" :message="error" @retry="reload" />
   <template v-else-if="data">
     <PageHero
-      :title="data.album.title" eyebrow="Album" :hash="data.album.artworkHash"
+      :title="data.album.title" :eyebrow="t('Album')" :hash="data.album.artworkHash"
       :meta="[data.album.artist, data.album.year, plural(data.album.trackCount, 'song'), formatLong(data.album.durationMs)].filter(Boolean).join(' · ')"
     >
       <template #actions><PlayActions :load="source.all" /></template>
