@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import { Clock } from 'lucide-vue-next'
 import { api } from '@/lib/api'
 import { greeting, plural } from '@/lib/format'
-import { t } from '@/lib/i18n'
+import { dateLocale, t } from '@/lib/i18n'
 import { useLoader } from '@/composables/useLoader'
 import { arraySource } from '@/composables/usePagedTracks'
 import ErrorState from '@/components/ErrorState.vue'
@@ -34,7 +34,7 @@ async function playAlbum(id: number): Promise<void> {
   <ErrorState v-if="error" :message="error" @retry="reload" />
   <div v-else>
     <header class="px-8 pb-2 pt-6">
-      <p class="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{{ new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' }) }}</p>
+      <p class="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{{ new Date().toLocaleDateString(dateLocale(), { weekday: 'long', month: 'long', day: 'numeric' }) }}</p>
       <h1 class="mt-3 text-[clamp(3rem,7vw,6rem)] font-medium leading-[0.95]">{{ greeting() }}</h1>
       <p v-if="data" class="mt-4 text-[15px] text-muted-foreground">{{ plural(data.added.total, 'song') }} · {{ plural(data.albums.total, 'album') }}</p>
     </header>
@@ -43,7 +43,7 @@ async function playAlbum(id: number): Promise<void> {
       <div class="grid grid-cols-[repeat(auto-fill,minmax(168px,1fr))] gap-4"><div v-for="i in 6" :key="i" class="aspect-square animate-pulse rounded-2xl bg-foreground/6" /></div>
     </div>
     <template v-else-if="data">
-      <Shelf title="Recently played">
+      <Shelf :title="t('Recently played')">
         <TrackList v-if="data.recent.items.length" :source="recent" numbered />
         <div v-else class="flex items-center gap-4 rounded-2xl bg-card p-6 shadow-card">
           <Clock class="size-6 text-muted-foreground" :stroke-width="1.5" />
@@ -51,16 +51,16 @@ async function playAlbum(id: number): Promise<void> {
         </div>
       </Shelf>
 
-      <Shelf v-if="data.albums.items.length" title="Albums" :to="{ name: 'albums' }">
+      <Shelf v-if="data.albums.items.length" :title="t('Albums')" :to="{ name: 'albums' }">
         <div class="grid grid-cols-[repeat(auto-fill,minmax(168px,1fr))] gap-x-2 gap-y-2">
           <MediaCard
             v-for="a in data.albums.items.slice(0, 8)" :key="a.id" :to="{ name: 'album', params: { id: a.id } }"
-            :title="a.title" :subtitle="a.artist || 'Unknown artist'" :hash="a.artworkHash" :play-label="`Play ${a.title}`" @play="playAlbum(a.id)"
+            :title="a.title" :subtitle="a.artist || t('Unknown artist')" :hash="a.artworkHash" :play-label="t('Play {title}', { title: a.title })" @play="playAlbum(a.id)"
           />
         </div>
       </Shelf>
 
-      <Shelf v-if="data.added.items.length" title="Recently added">
+      <Shelf v-if="data.added.items.length" :title="t('Recently added')">
         <TrackList :source="added" numbered />
       </Shelf>
     </template>
