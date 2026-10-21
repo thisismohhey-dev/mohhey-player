@@ -14,7 +14,7 @@ export const APP_ORIGIN = `${APP_SCHEME}://renderer`
 export function registerSchemes(): void {
   protocol.registerSchemesAsPrivileged([
     { scheme: APP_SCHEME, privileges: { standard: true, secure: true, supportFetchAPI: true } },
-    { scheme: MEDIA_SCHEME, privileges: { standard: true, secure: true, supportFetchAPI: true, stream: true } },
+    { scheme: MEDIA_SCHEME, privileges: { standard: true, secure: true, supportFetchAPI: true, stream: true, corsEnabled: true } },
   ])
 }
 
@@ -48,7 +48,8 @@ export function handleAppProtocol(rendererDir: string): void {
 async function serveAudioFile(path: string, rangeHeader: string | null): Promise<Response> {
   let size: number
   try { size = (await stat(path)).size } catch { return new Response('File not found', { status: 404 }) }
-  const base = { 'content-type': audioMime(extname(path)), 'accept-ranges': 'bytes', 'cache-control': 'no-store' }
+  // CORS header: the Web Audio graph (EQ, loudness, crossfade) may only read samples from CORS-approved media.
+  const base = { 'content-type': audioMime(extname(path)), 'accept-ranges': 'bytes', 'cache-control': 'no-store', 'access-control-allow-origin': '*' }
   if (size === 0) return new Response(null, { status: 200, headers: { ...base, 'content-length': '0' } })
   const range = parseRange(rangeHeader, size)
   if (range === 'unsatisfiable') return new Response(null, { status: 416, headers: { ...base, 'content-range': `bytes */${size}` } })
