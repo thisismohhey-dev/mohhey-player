@@ -11,6 +11,9 @@ export function buildCsp(isDev: boolean, mediaScheme: string): string {
     `connect-src 'self' http://127.0.0.1:*${isDev ? ' ws://localhost:*' : ''}`,
     "object-src 'none'",
     "base-uri 'none'",
+    "form-action 'none'",
+    "frame-src 'none'",
+    "worker-src 'none'",
     "frame-ancestors 'none'",
   ].join('; ')
 }
@@ -63,3 +66,13 @@ const AUDIO_MIME: Record<string, string> = {
   '.wav': 'audio/wav', '.m4a': 'audio/mp4', '.aac': 'audio/aac', '.weba': 'audio/webm',
 }
 export const audioMime = (ext: string): string => AUDIO_MIME[ext.toLowerCase()] ?? 'application/octet-stream'
+
+/**
+ * Command-line switches that would let another local program drive or inspect a *packaged* app (remote debugging,
+ * Node inspector, loading extra code). A shipped build refuses to start when any of them is present.
+ */
+const FORBIDDEN_SWITCH = /^--?(remote-debugging-(port|pipe|address)|remote-allow-origins|inspect(-brk|-port|-publish-uid)?|debug-brk|js-flags|load-extension|disable-web-security|no-sandbox|disable-gpu-sandbox|host-rules|host-resolver-rules|proxy-server|ignore-certificate-errors|unsafely-treat-insecure-origin-as-secure|renderer-cmd-prefix|utility-cmd-prefix|gpu-launcher|ppapi-plugin-launcher|browser-subprocess-path)(=|$)/i
+
+export function findForbiddenSwitch(argv: readonly string[]): string | null {
+  return argv.find((a) => FORBIDDEN_SWITCH.test(a)) ?? null
+}

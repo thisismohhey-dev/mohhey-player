@@ -3,7 +3,8 @@ import { join } from 'node:path'
 import { app, BrowserWindow, dialog, ipcMain, screen } from 'electron'
 import type { TrayCommand, TrayLabels, WindowControl } from '@mohhey/contracts'
 import { startApi, type ApiHandle } from './api-process'
-import { originOf } from './policy'
+import { findForbiddenSwitch, originOf } from './policy'
+import { migrateLegacyUserData } from './userdata'
 import { APP_ORIGIN, handleAppProtocol, handleMediaProtocol, registerSchemes } from './protocols'
 import { applySecurity, isTrustedSender, lockNavigation } from './security'
 import { destroyTray, resourcePath, sanitizeLabels, showTray } from './tray'
@@ -12,13 +13,20 @@ const isDev = !app.isPackaged && !!process.env.ELECTRON_RENDERER_URL
 const rendererUrl = isDev ? process.env.ELECTRON_RENDERER_URL! : `${APP_ORIGIN}/index.html`
 const allowedOrigin = isDev ? originOf(process.env.ELECTRON_RENDERER_URL!)! : APP_ORIGIN
 
+// A shipped build must not be drivable or inspectable from outside (remote debugging, injected code, weakened sandbox).
+if (app.isPackaged) {
+  const forbidden = findForbiddenSwitch(process.argv.slice(1))
+  if (forbidden) { console.error(`Refusing to start with ${forbidden.split('=')[0]}`); app.exit(2) }
+}
+
 registerSchemes()
 
 // Hardware media keys and the OS media overlay (driven by the page's MediaSession).
 app.commandLine.appendSwitch('enable-features', 'HardwareMediaKeyHandling,MediaSessionService')
 
-// Lets tests (and side-by-side dev runs) use an isolated profile instead of the real one.
-if (!app.isPackaged && process.env.MOHHEY_USER_DATA) app.setPath('userData', process.env.MOHHEY_USER_DATA)
+// One data folder for every build (dev and installed): <appData>/Mohhey Player. Dev runs may point somewhere else for isolated tests.
+const isolatedProfile = !app.isPackaged && !!process.env.MOHHEY_USER_DATA
+app.setPath('userData', isolatedProfile ? process.env.MOHHEY_USER_DATA! : join(app.getPath('appData'), 'Mohhey Player'))
 
 // Development-only: lets automated UI checks attach over CDP. Never enabled in a packaged build.
 if (!app.isPackaged && process.env.MOHHEY_DEBUG_PORT) app.commandLine.appendSwitch('remote-debugging-port', process.env.MOHHEY_DEBUG_PORT)
@@ -146,11 +154,25 @@ function registerIpc(): void {
     if (!isTrustedSender(e, allowedOrigin) || !api) throw new Error('Not available')
     return { baseUrl: api.baseUrl, token: api.token }
   })
-  ipcMain.handle('dialog:pick-folder', async (e) => {
-    if (!isTrustedSender(e, allowedOrigin)) throw new Error('Not available')
+  ipcMain.handle('library:add-folder', async (e) => {
+    if (!isTrustedSender(e, allowedOrigin) || !api) throw new Error('Not available')
     const opts = { title: 'Choose a music folder', properties: ['openDirectory' as const] }
     const res = mainWindow ? await dialog.showOpenDialog(mainWindow, opts) : await dialog.showOpenDialog(opts)
-    return res.canceled ? null : (res.filePaths[0] ?? null)
+    const path = res.canceled ? null : (res.filePaths[0] ?? null)
+    if (!path) return { status: 'cancelled' as const }
+    // Only the main process holds the internal secret, so page code cannot add arbitrary folders (e.g. network shares).
+    try {
+      const r = await fetch(`${api.baseUrl}/library/folders`, {
+        method: 'POST',
+        headers: { authorization: `Bearer ${api.token}`, 'x-mohhey-internal': api.internalToken, 'content-type': 'application/json' },
+        body: JSON.stringify({ path }),
+      })
+      if (r.ok) return { status: 'added' as const }
+      const body = (await r.json().catch(() => null)) as { message?: string } | null
+      return { status: 'error' as const, message: body?.message ?? 'The folder could not be added.' }
+    } catch {
+      return { status: 'error' as const, message: 'The library service is not responding.' }
+    }
   })
 }
 
@@ -162,6 +184,9 @@ app.on('second-instance', () => {
 
 app.whenReady().then(async () => {
   applySecurity(isDev)
+  if (!isolatedProfile) {
+    try { migrateLegacyUserData(join(app.getPath('appData'), '@mohhey', 'desktop'), app.getPath('userData')) } catch (e) { console.error('Could not migrate the previous library:', e instanceof Error ? e.message : e) }
+  }
   try {
     api = await startApi([allowedOrigin])
   } catch (err) {

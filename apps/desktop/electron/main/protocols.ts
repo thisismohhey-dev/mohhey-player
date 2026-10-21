@@ -71,12 +71,13 @@ async function serveAudioFile(path: string, rangeHeader: string | null): Promise
  */
 export function handleMediaProtocol(api: ApiHandle): void {
   const auth = { authorization: `Bearer ${api.token}` }
+  const internal = { ...auth, 'x-mohhey-internal': api.internalToken }
   protocol.handle(MEDIA_SCHEME, async (request) => {
     const target = parseMediaUrl(request.url)
     if (!target) return new Response('Bad request', { status: 400 })
     try {
       if (target.kind === 'track') {
-        const res = await fetch(`${api.baseUrl}/internal/tracks/${target.key}/path`, { headers: auth })
+        const res = await fetch(`${api.baseUrl}/internal/tracks/${target.key}/path`, { headers: internal })
         if (!res.ok) return new Response('Track not found', { status: 404 })
         const { path } = (await res.json()) as { path: string }
         return await serveAudioFile(path, request.headers.get('range'))

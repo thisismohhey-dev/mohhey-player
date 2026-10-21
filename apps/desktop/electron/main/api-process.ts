@@ -7,8 +7,13 @@ import { app } from 'electron'
 export interface ApiHandle {
   baseUrl: string
   token: string
+  /** Second secret for routes only this process may call (file paths, adding folders). Never sent to the renderer. */
+  internalToken: string
   stop(): void
 }
+
+const SAFE_ENV = ['PATH', 'SystemRoot', 'windir', 'TEMP', 'TMP', 'USERPROFILE', 'APPDATA', 'LOCALAPPDATA', 'HOME', 'LANG', 'TMPDIR']
+const pick = (env: NodeJS.ProcessEnv, keys: string[]): NodeJS.ProcessEnv => Object.fromEntries(keys.filter((k) => env[k] !== undefined).map((k) => [k, env[k]]))
 
 const READY_PREFIX = 'MOHHEY_API_READY '
 const STARTUP_TIMEOUT_MS = 15_000
@@ -26,6 +31,7 @@ function resolveCommand(): { cmd: string; args: string[]; cwd: string } {
 /** Starts the Elysia API as a child process on a random loopback port, protected by a per-launch token. */
 export function startApi(allowedOrigins: string[]): Promise<ApiHandle> {
   const token = randomBytes(24).toString('hex')
+  const internalToken = randomBytes(24).toString('hex')
   const { cmd, args, cwd } = resolveCommand()
   if (app.isPackaged && !existsSync(cmd)) throw new Error(`API binary not found at ${cmd}`)
 
@@ -33,9 +39,11 @@ export function startApi(allowedOrigins: string[]): Promise<ApiHandle> {
     cwd,
     stdio: ['pipe', 'pipe', 'pipe'],
     windowsHide: true,
+    // The packaged API gets a minimal environment: it needs no proxy settings, NODE_OPTIONS, credentials, etc.
     env: {
-      ...process.env,
+      ...(app.isPackaged ? pick(process.env, SAFE_ENV) : process.env),
       MOHHEY_API_TOKEN: token,
+      MOHHEY_INTERNAL_TOKEN: internalToken,
       MOHHEY_API_PORT: '0',
       MOHHEY_DATA_DIR: join(app.getPath('userData'), 'data'),
       MOHHEY_ALLOWED_ORIGINS: allowedOrigins.join(','),
@@ -58,6 +66,7 @@ export function startApi(allowedOrigins: string[]): Promise<ApiHandle> {
       resolvePromise({
         baseUrl: `http://127.0.0.1:${port}`,
         token,
+        internalToken,
         stop: () => { child.stdin?.end(); setTimeout(() => child.kill(), 1500).unref() },
       })
     })
