@@ -6,7 +6,7 @@ import MiniPlayer from '@/components/MiniPlayer.vue'
 import NowPlaying from '@/components/NowPlaying.vue'
 import Onboarding from '@/components/Onboarding.vue'
 import PlayerBar from '@/components/PlayerBar.vue'
-import PromptDialog from '@/components/PromptDialog.vue'
+import PlaylistDialog from '@/components/PlaylistDialog.vue'
 import QueuePanel from '@/components/QueuePanel.vue'
 import Sidebar from '@/components/Sidebar.vue'
 import Toasts from '@/components/Toasts.vue'
@@ -50,13 +50,19 @@ function onKey(e: KeyboardEvent): void {
   else if (mod && e.key === 'ArrowDown') { e.preventDefault(); player.setVolume(player.volume - 0.05) }
   else if (!mod && !e.altKey && e.key.toLowerCase() === 'm') player.toggleMute()
   else if (mod && e.shiftKey && e.key.toLowerCase() === 'm') { e.preventDefault(); ui.setMiniMode(!ui.miniMode) }
+  else if (mod && !e.shiftKey && e.key.toLowerCase() === 'b') { e.preventDefault(); ui.toggleSidebar() }
   else if (!mod && !e.altKey && e.key.toLowerCase() === 'q') ui.queueOpen = !ui.queueOpen
 }
 
+const offs: (() => void)[] = []
 const media = matchMedia('(prefers-color-scheme: dark)')
 const onScheme = () => { if (ui.theme === 'system') ui.applyTheme() }
-onMounted(() => { void boot(); window.addEventListener('keydown', onKey); media.addEventListener('change', onScheme) })
-onBeforeUnmount(() => { window.removeEventListener('keydown', onKey); media.removeEventListener('change', onScheme) })
+onMounted(() => {
+  // The tray (main process) can leave mini mode or issue playback commands on its own.
+  offs.push(window.mohhey.onMiniChange((mini) => { ui.miniMode = mini }))
+  offs.push(window.mohhey.onTrayCommand((cmd) => { if (cmd === 'play-pause') void player.togglePlay(); else if (cmd === 'next') player.next(); else player.previous() }))
+  void boot(); window.addEventListener('keydown', onKey); media.addEventListener('change', onScheme) })
+onBeforeUnmount(() => { offs.forEach((off) => off()); window.removeEventListener('keydown', onKey); media.removeEventListener('change', onScheme) })
 </script>
 
 <template>
@@ -85,7 +91,7 @@ onBeforeUnmount(() => { window.removeEventListener('keydown', onKey); media.remo
       <Transition name="fade"><NowPlaying v-if="ui.nowPlayingOpen" /></Transition>
     </div>
     </template>
-    <PromptDialog />
+    <PlaylistDialog />
     <Toasts />
   </TooltipProvider>
 </template>
