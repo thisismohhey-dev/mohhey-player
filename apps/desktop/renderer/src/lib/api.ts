@@ -1,8 +1,8 @@
 import { z } from 'zod'
 import { t } from '@/lib/i18n'
 import {
-  AlbumSchema, AppSettingsSchema, BrowseResultSchema, ArtistSchema, FolderSchema, Page, PlaylistSchema, ScanStatusSchema, SearchResultSchema, TrackSchema,
-  type Album, type PlaylistIcon, type AppSettings, type BrowseResult, type AppSettingsPatch, type Artist, type LibraryFolder, type Paged, type Playlist, type ScanStatus,
+  AlbumSchema, AppSettingsSchema, BrowseResultSchema, DuplicateGroupSchema, LyricsSchema, ArtistSchema, FolderSchema, Page, PlaylistSchema, ScanStatusSchema, SearchResultSchema, TrackSchema,
+  type Album, type DuplicateGroup, type Lyrics, type PlaylistIcon, type AppSettings, type BrowseResult, type AppSettingsPatch, type Artist, type LibraryFolder, type Paged, type Playlist, type ScanStatus,
   type SearchResult, type Track, type TrackQuery,
 } from '@mohhey/contracts'
 
@@ -54,6 +54,11 @@ export const api = {
     byIds: async (ids: number[]): Promise<Track[]> => (await request('/tracks/by-ids', Items(TrackSchema), { method: 'POST', body: { ids } })).items,
     setFavorite: (id: number, value: boolean) => request(`/tracks/${id}/favorite`, z.object({ favorite: z.boolean() }), { method: 'PUT', body: { value } }),
     played: (id: number, record: boolean) => request(`/tracks/${id}/played`, Ok, { method: 'POST', body: { record } }),
+    setPosition: (id: number, positionMs: number) => request(`/tracks/${id}/position`, Ok, { method: 'PUT', body: { positionMs: Math.round(positionMs) } }),
+    setGain: (id: number, gainDb: number) => request(`/tracks/${id}/gain`, Ok, { method: 'PUT', body: { gainDb } }),
+    editMetadata: (id: number, input: { title: string; artist: string; album: string }): Promise<Track> => request(`/tracks/${id}/metadata`, TrackSchema, { method: 'PATCH', body: input }),
+    resetMetadata: (id: number): Promise<Track> => request(`/tracks/${id}/metadata/reset`, TrackSchema, { method: 'POST' }),
+    lyrics: (id: number): Promise<Lyrics> => request(`/tracks/${id}/lyrics`, LyricsSchema),
     markMissing: (id: number) => request(`/tracks/${id}/missing`, Ok, { method: 'POST' }),
   },
   albums: {
@@ -81,6 +86,7 @@ export const api = {
     removeFolder: async (id: number): Promise<LibraryFolder[]> => (await request(`/library/folders/${id}`, Items(FolderSchema), { method: 'DELETE' })).items,
     scan: (): Promise<ScanStatus> => request('/library/scan', ScanStatusSchema, { method: 'POST' }),
     browse: (path = ''): Promise<BrowseResult> => request(`/library/browse${qs({ path })}`, BrowseResultSchema),
+    duplicates: async (): Promise<DuplicateGroup[]> => (await request('/library/duplicates', z.object({ groups: z.array(DuplicateGroupSchema) }))).groups,
     scanStatus: (): Promise<ScanStatus> => request('/library/scan', ScanStatusSchema),
   },
   search: (q: string): Promise<SearchResult> => request(`/search${qs({ q })}`, SearchResultSchema),
