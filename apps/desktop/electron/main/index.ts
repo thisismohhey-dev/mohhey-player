@@ -14,6 +14,9 @@ const allowedOrigin = isDev ? originOf(process.env.ELECTRON_RENDERER_URL!)! : AP
 
 registerSchemes()
 
+// Hardware media keys and the OS media overlay (driven by the page's MediaSession).
+app.commandLine.appendSwitch('enable-features', 'HardwareMediaKeyHandling,MediaSessionService')
+
 // Lets tests (and side-by-side dev runs) use an isolated profile instead of the real one.
 if (!app.isPackaged && process.env.MOHHEY_USER_DATA) app.setPath('userData', process.env.MOHHEY_USER_DATA)
 
@@ -103,7 +106,7 @@ function createWindow(): void {
     minHeight: 600,
     show: false,
     backgroundColor: '#f4f2ee',
-    icon: resourcePath(process.platform === 'win32' ? 'icon.ico' : 'icon.png'),
+    icon: resourcePath('icon.png'),
     // Frameless: macOS keeps its traffic lights; on Windows/Linux the renderer draws its own window buttons.
     titleBarStyle: 'hidden',
     webPreferences: {
