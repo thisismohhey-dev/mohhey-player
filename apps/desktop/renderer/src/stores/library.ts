@@ -1,3 +1,4 @@
+import { t } from '@/lib/i18n'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import type { LibraryFolder, Playlist, ScanStatus } from '@mohhey/contracts'
@@ -46,7 +47,7 @@ export const useLibraryStore = defineStore('library', () => {
       scan.value = await api.library.scanStatus()
       poll()
     } catch (e) {
-      ui.toast(e instanceof ApiClientError ? e.message : 'Couldn’t add that folder.', 'error')
+      ui.toast(e instanceof ApiClientError ? e.message : t('Couldn’t add that folder.'), 'error')
     }
   }
 
@@ -66,7 +67,7 @@ export const useLibraryStore = defineStore('library', () => {
       await refreshPlaylists()
       return p
     } catch (e) {
-      ui.toast(e instanceof ApiClientError ? e.message : 'Couldn’t create the playlist.', 'error')
+      ui.toast(e instanceof ApiClientError ? e.message : t('Couldn’t create the playlist.'), 'error')
       return null
     }
   }
