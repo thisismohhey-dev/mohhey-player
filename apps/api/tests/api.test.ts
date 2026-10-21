@@ -202,6 +202,19 @@ describe('playlists, favorites, history, settings', () => {
     expect((await call(`/playlists/${p.id}`)).status).toBe(404)
   })
 
+  test('playlist icon: default, create, edit, validation', async () => {
+    const a = await json(call('/playlists', { method: 'POST', body: JSON.stringify({ name: 'Plain' }) }))
+    expect(a.icon).toBe('list-music')
+    const b = await json(call('/playlists', { method: 'POST', body: JSON.stringify({ name: 'Drive', icon: 'car' }) }))
+    expect(b.icon).toBe('car')
+    const c = await json(call('/playlists/' + b.id, { method: 'PATCH', body: JSON.stringify({ icon: 'moon' }) }))
+    expect(c).toMatchObject({ name: 'Drive', icon: 'moon' })
+    const d = await json(call('/playlists/' + b.id, { method: 'PATCH', body: JSON.stringify({ name: 'Night drive' }) }))
+    expect(d).toMatchObject({ name: 'Night drive', icon: 'moon' })
+    expect((await call('/playlists', { method: 'POST', body: JSON.stringify({ name: 'X', icon: 'not-an-icon' }) })).status).toBe(400)
+    expect((await call('/playlists/999', { method: 'PATCH', body: JSON.stringify({ name: 'Nope' }) })).status).toBe(404)
+  })
+
   test('favorites and history', async () => {
     const t = await seed()
     await call(`/tracks/${t[0]!.id}/favorite`, { method: 'PUT', body: JSON.stringify({ value: true }) })
