@@ -12,6 +12,8 @@ export interface DesktopBridge {
    * page code: the main process talks to the library service itself.
    */
   addLibraryFolder(): Promise<{ status: 'added' } | { status: 'cancelled' } | { status: 'error'; message: string }>
+  /** Opens the project's GitHub page in the default browser. Only fixed, known pages can be opened. */
+  openLink(page: 'repo' | 'profile'): void
   /** Custom title-bar buttons (Windows/Linux; macOS keeps its native traffic lights). */
   windowControl(action: WindowControl): void
   onMaximizeChange(cb: (maximized: boolean) => void): () => void
