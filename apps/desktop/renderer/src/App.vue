@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/lib/i18n'
 import { onBeforeUnmount, onMounted, provide, ref } from 'vue'
 import { RouterView } from 'vue-router'
 import MiniPlayer from '@/components/MiniPlayer.vue'
@@ -13,6 +14,7 @@ import TopBar from '@/components/TopBar.vue'
 import ErrorState from '@/components/ErrorState.vue'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { api } from '@/lib/api'
+import { setLocale } from '@/lib/i18n'
 import { useLibraryStore } from '@/stores/library'
 import { usePlayerStore } from '@/stores/player'
 import { useUiStore } from '@/stores/ui'
@@ -28,6 +30,7 @@ async function boot(): Promise<void> {
   fatal.value = null
   try {
     const settings = await api.settings.get()
+    setLocale(settings.locale)
     ui.setTheme(settings.theme)
     player.setRecordHistory(settings.recordHistory)
     await Promise.all([library.load(), player.init()])
@@ -59,8 +62,8 @@ onBeforeUnmount(() => { window.removeEventListener('keydown', onKey); media.remo
 <template>
   <TooltipProvider :delay-duration="300">
     <ErrorState v-if="fatal" :message="fatal" class="h-full" @retry="boot" />
-    <div v-else-if="!library.loaded" class="grid h-full place-items-center" role="status" aria-label="Loading">
-      <div class="font-display text-3xl font-bold tracking-tight">Mohhey<span class="text-brand">.</span></div>
+    <div v-else-if="!library.loaded" class="grid h-full place-items-center" role="status" :aria-label="t('Loading')">
+      <div dir="ltr" class="font-display text-3xl font-bold tracking-tight">Mohhey<span class="text-brand">.</span></div>
     </div>
     <Onboarding v-else-if="!library.hasLibrary" />
     <template v-else>
