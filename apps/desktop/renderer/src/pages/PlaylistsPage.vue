@@ -2,10 +2,11 @@
 import { ListMusic, Plus } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
-import { promptText } from '@/composables/usePrompt'
+import { usePlaylistActions } from '@/composables/usePlaylistActions'
 import { api } from '@/lib/api'
 import { formatLong, plural } from '@/lib/format'
 import { t } from '@/lib/i18n'
+import { iconFor } from '@/lib/playlistIcons'
 import { useLibraryStore } from '@/stores/library'
 import { usePlayerStore } from '@/stores/player'
 import EmptyState from '@/components/EmptyState.vue'
@@ -14,11 +15,10 @@ import MediaCard from '@/components/MediaCard.vue'
 const library = useLibraryStore()
 const player = usePlayerStore()
 const router = useRouter()
+const actions = usePlaylistActions()
 
 async function create(): Promise<void> {
-  const name = await promptText({ title: t('New playlist'), label: t('Name'), confirmLabel: t('Create') })
-  if (!name) return
-  const p = await library.createPlaylist(name)
+  const p = await actions.create()
   if (p) void router.push({ name: 'playlist', params: { id: p.id } })
 }
 async function play(id: number): Promise<void> {
@@ -41,7 +41,7 @@ async function play(id: number): Promise<void> {
   <div v-else class="grid grid-cols-[repeat(auto-fill,minmax(188px,1fr))] gap-x-2 gap-y-3 px-6">
     <MediaCard
       v-for="p in library.playlists" :key="p.id" :to="{ name: 'playlist', params: { id: p.id } }" :title="p.name"
-      :subtitle="`${plural(p.trackCount, 'song')}${p.durationMs ? ' · ' + formatLong(p.durationMs) : ''}`" :mosaic="p.coverHashes"
+      :subtitle="`${plural(p.trackCount, 'song')}${p.durationMs ? ' · ' + formatLong(p.durationMs) : ''}`" :mosaic="p.coverHashes" :icon="iconFor(p.icon)"
       :play-label="p.trackCount ? t('Play {title}', { title: p.name }) : undefined" @play="play(p.id)"
     />
   </div>
