@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
-import { Disc3, Heart, House, ListMusic, Mic2, Music, Plus, Settings } from 'lucide-vue-next'
+import { Disc3, FolderTree, Heart, House, ListMusic, Mic2, Music, Plus, Settings } from 'lucide-vue-next'
 import { t } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import { useLibraryStore } from '@/stores/library'
@@ -17,6 +17,7 @@ const nav = [
   { name: 'songs', label: t('nav.songs'), icon: Music },
   { name: 'albums', label: t('nav.albums'), icon: Disc3 },
   { name: 'artists', label: t('nav.artists'), icon: Mic2 },
+  { name: 'folders', label: t('nav.folders'), icon: FolderTree },
   { name: 'favorites', label: t('nav.favorites'), icon: Heart },
 ] as const
 
