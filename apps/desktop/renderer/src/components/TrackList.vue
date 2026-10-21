@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t, digits } from '@/lib/i18n'
 import { computed, inject, nextTick, onBeforeUnmount, onMounted, ref, watch, type Ref } from 'vue'
 import { useVirtualizer } from '@tanstack/vue-virtual'
 import { ArrowDown, ArrowUp, Heart, MoreHorizontal, Pause, Play } from 'lucide-vue-next'
@@ -106,18 +107,18 @@ const isCurrent = (id: number) => player.current?.id === id
     <div :class="cn('sticky top-0 z-10 grid items-center gap-3 border-b bg-background/85 px-3 py-2 text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground backdrop-blur', COLS)">
       <span class="text-center">#</span>
       <button v-if="sortable" class="flex items-center gap-1 text-start uppercase hover:text-foreground" @click="emit('sort', 'title')">
-        Title <component :is="dir === 'asc' ? ArrowUp : ArrowDown" v-if="sort === 'title'" class="size-3" />
+        {{ t('Title') }} <component :is="dir === 'asc' ? ArrowUp : ArrowDown" v-if="sort === 'title'" class="size-3" />
       </button>
-      <span v-else>Title</span>
+      <span v-else>{{ t('Title') }}</span>
       <button v-if="sortable" class="hidden items-center gap-1 text-start uppercase hover:text-foreground @2xl:flex" @click="emit('sort', 'album')">
-        Album <component :is="dir === 'asc' ? ArrowUp : ArrowDown" v-if="sort === 'album'" class="size-3" />
+        {{ t('Album') }} <component :is="dir === 'asc' ? ArrowUp : ArrowDown" v-if="sort === 'album'" class="size-3" />
       </button>
-      <span v-else class="hidden @2xl:block">Album</span>
+      <span v-else class="hidden @2xl:block">{{ t('Album') }}</span>
       <span />
       <button v-if="sortable" class="flex items-center justify-end gap-1 uppercase hover:text-foreground" @click="emit('sort', 'duration')">
-        <component :is="dir === 'asc' ? ArrowUp : ArrowDown" v-if="sort === 'duration'" class="size-3" /> Time
+        <component :is="dir === 'asc' ? ArrowUp : ArrowDown" v-if="sort === 'duration'" class="size-3" /> {{ t('Time') }}
       </button>
-      <span v-else class="text-end">Time</span>
+      <span v-else class="text-end">{{ t('Time') }}</span>
       <span />
     </div>
 
@@ -133,7 +134,7 @@ const isCurrent = (id: number) => player.current?.id === id
               data-row :data-index="it.index" role="listitem" tabindex="0" :draggable="reorderable"
               @dragstart="dragFrom = it.index" @dragenter.prevent="dragOver = it.index" @dragover.prevent
               @drop.prevent="dragFrom !== null && dragFrom !== it.index && emit('move', dragFrom, it.index); dragFrom = dragOver = null" @dragend="dragFrom = dragOver = null"
-              :aria-label="`${track.title}${track.artist ? ' by ' + track.artist : ''}`"
+              :aria-label="track.artist ? t('{title} by {artist}', { title: track.title, artist: track.artist }) : track.title"
               :class="cn(
                 'group mx-1 grid h-[56px] cursor-default items-center gap-3 rounded-xl px-2 transition-colors',
                 COLS,
@@ -148,12 +149,12 @@ const isCurrent = (id: number) => player.current?.id === id
             >
               <button
                 class="relative grid size-9 place-items-center rounded-full text-sm text-muted-foreground"
-                :aria-label="isCurrent(track.id) && player.isPlaying ? 'Pause' : `Play ${track.title}`"
+                :aria-label="isCurrent(track.id) && player.isPlaying ? t('Pause') : t('Play {title}', { title: track.title })"
                 @click.stop="playAt(it.index)"
               >
                 <span class="tabular group-hover:hidden group-focus-within:hidden" :class="isCurrent(track.id) && 'text-brand'">
                   <span v-if="isCurrent(track.id) && player.isPlaying" class="eq" aria-hidden="true"><i /><i /><i /></span>
-                  <template v-else>{{ numbered ? it.index + 1 : (track.trackNo ?? it.index + 1) }}</template>
+                  <template v-else>{{ digits(String(numbered ? it.index + 1 : (track.trackNo ?? it.index + 1))) }}</template>
                 </span>
                 <component :is="isCurrent(track.id) && player.isPlaying ? Pause : Play" class="hidden size-4 fill-current text-foreground group-hover:block group-focus-within:block" />
               </button>
@@ -162,7 +163,7 @@ const isCurrent = (id: number) => player.current?.id === id
                 <Cover :hash="track.artworkHash" :seed="track.album || track.title" class="size-10 shrink-0 rounded-lg" />
                 <div class="min-w-0">
                   <div dir="auto" class="truncate text-[14px] font-medium leading-tight" :class="isCurrent(track.id) && 'text-brand'">{{ track.title }}</div>
-                  <div dir="auto" class="truncate text-[13px] text-muted-foreground">{{ track.artist || 'Unknown artist' }}</div>
+                  <div dir="auto" class="truncate text-[13px] text-muted-foreground">{{ track.artist || t('Unknown artist') }}</div>
                 </div>
               </div>
               <div dir="auto" class="hidden min-w-0 truncate text-[13px] text-muted-foreground @2xl:block">{{ track.album }}</div>
@@ -170,7 +171,7 @@ const isCurrent = (id: number) => player.current?.id === id
               <button
                 class="grid size-8 place-items-center rounded-full transition-opacity hover:bg-foreground/8"
                 :class="track.favorite ? 'text-brand' : 'text-muted-foreground opacity-0 group-hover:opacity-100 group-focus-within:opacity-100'"
-                :aria-label="track.favorite ? 'Remove from favorites' : 'Add to favorites'" :aria-pressed="track.favorite"
+                :aria-label="t(track.favorite ? 'Remove from favorites' : 'Add to favorites')" :aria-pressed="track.favorite"
                 @click.stop="player.toggleFavorite(track)"
               >
                 <Heart class="size-4" :class="track.favorite && 'fill-current'" />
@@ -178,7 +179,7 @@ const isCurrent = (id: number) => player.current?.id === id
               <span class="text-end text-[13px] tabular text-muted-foreground">{{ formatTime(track.durationMs) }}</span>
               <button
                 class="grid size-8 place-items-center rounded-full text-muted-foreground opacity-0 hover:bg-foreground/8 hover:text-foreground group-hover:opacity-100 group-focus-within:opacity-100"
-                aria-label="More actions" @click.stop="openMenu"
+                :aria-label="t('More actions')" @click.stop="openMenu"
               ><MoreHorizontal class="size-4" /></button>
             </div>
           </ContextMenuTrigger>
