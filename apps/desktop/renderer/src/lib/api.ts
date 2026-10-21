@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import {
-  AlbumSchema, AppSettingsSchema, ArtistSchema, FolderSchema, Page, PlaylistSchema, ScanStatusSchema, SearchResultSchema, TrackSchema,
-  type Album, type AppSettings, type AppSettingsPatch, type Artist, type LibraryFolder, type Paged, type Playlist, type ScanStatus,
+  AlbumSchema, AppSettingsSchema, BrowseResultSchema, ArtistSchema, FolderSchema, Page, PlaylistSchema, ScanStatusSchema, SearchResultSchema, TrackSchema,
+  type Album, type AppSettings, type BrowseResult, type AppSettingsPatch, type Artist, type LibraryFolder, type Paged, type Playlist, type ScanStatus,
   type SearchResult, type Track, type TrackQuery,
 } from '@mohhey/contracts'
 
@@ -79,6 +79,7 @@ export const api = {
     addFolder: async (path: string): Promise<LibraryFolder[]> => (await request('/library/folders', Items(FolderSchema), { method: 'POST', body: { path } })).items,
     removeFolder: async (id: number): Promise<LibraryFolder[]> => (await request(`/library/folders/${id}`, Items(FolderSchema), { method: 'DELETE' })).items,
     scan: (): Promise<ScanStatus> => request('/library/scan', ScanStatusSchema, { method: 'POST' }),
+    browse: (path = ''): Promise<BrowseResult> => request(`/library/browse${qs({ path })}`, BrowseResultSchema),
     scanStatus: (): Promise<ScanStatus> => request('/library/scan', ScanStatusSchema),
   },
   search: (q: string): Promise<SearchResult> => request(`/search${qs({ q })}`, SearchResultSchema),
