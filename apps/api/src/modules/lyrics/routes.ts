@@ -1,5 +1,5 @@
 import { Elysia } from 'elysia'
-import { readFile } from 'node:fs/promises'
+import { readFile, stat } from 'node:fs/promises'
 import { parse, join } from 'node:path'
 import { parseFile } from 'music-metadata'
 import { z } from 'zod'
@@ -8,11 +8,16 @@ import { notFound } from '../../shared/errors'
 import type { TracksRepo } from '../tracks/repo'
 import { parseLrc } from './lrc'
 
+const MAX_LRC_BYTES = 512 * 1024
+
 /** Lyrics come only from the user's own files: a `.lrc` next to the audio file, or lyrics embedded in its tags. */
 async function loadLyrics(path: string): Promise<Lyrics | null> {
   const { dir, name } = parse(path)
   try {
-    const text = await readFile(join(dir, `${name}.lrc`), 'utf8')
+    const lrc = join(dir, `${name}.lrc`)
+    // Lyrics are small; refuse anything big instead of loading it into memory.
+    if ((await stat(lrc)).size > MAX_LRC_BYTES) throw new Error('lyrics file too large')
+    const text = await readFile(lrc, 'utf8')
     const parsed = parseLrc(text)
     if (parsed.lines.length) return { ...parsed, source: 'lrc-file' }
   } catch { /* no sidecar file */ }
