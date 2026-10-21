@@ -1,5 +1,4 @@
 import { Elysia } from 'elysia'
-import { timingSafeEqual } from 'node:crypto'
 import type { ApiError } from '@mohhey/contracts'
 import { browseRoutes } from './modules/library/browse'
 import { duplicatesRoutes } from './modules/library/duplicates'
@@ -15,18 +14,13 @@ import { TracksRepo } from './modules/tracks/repo'
 import { tracksRoutes } from './modules/tracks/routes'
 import type { Config } from './shared/config'
 import type { Db } from './shared/db'
+import { INTERNAL_HEADER, isLoopbackHost, requiresInternal, safeEqual } from './shared/access'
 import { HttpError } from './shared/errors'
 
 export interface AppDeps {
-  config: Pick<Config, 'token' | 'allowedOrigins' | 'artworkDir'>
+  config: Pick<Config, 'token' | 'internalToken' | 'allowedOrigins' | 'artworkDir'>
   db: Db
   metadataReader?: MetadataReader
-}
-
-const safeEqual = (a: string, b: string) => {
-  const x = Buffer.from(a)
-  const y = Buffer.from(b)
-  return x.length === y.length && timingSafeEqual(x, y)
 }
 
 const errorBody = (code: ApiError['code'], message: string): ApiError => ({ code, message })
@@ -38,6 +32,10 @@ export function createApp({ config, db, metadataReader }: AppDeps) {
   return new Elysia()
     // The API binds to loopback, but loopback alone is not a security boundary: every request needs the per-launch token.
     .onRequest(({ request, set }) => {
+      if (!isLoopbackHost(request.headers.get('host'))) {
+        set.status = 403
+        return errorBody('unauthorized', 'Requests must be addressed to the local service.')
+      }
       const origin = request.headers.get('origin')
       if (origin && config.allowedOrigins.includes(origin)) {
         set.headers['access-control-allow-origin'] = origin
@@ -52,6 +50,11 @@ export function createApp({ config, db, metadataReader }: AppDeps) {
       if (!safeEqual(token, config.token)) {
         set.status = 401
         return errorBody('unauthorized', 'Missing or invalid API token.')
+      }
+      const { pathname } = new URL(request.url)
+      if (requiresInternal(request.method, pathname) && !safeEqual(request.headers.get(INTERNAL_HEADER) ?? '', config.internalToken)) {
+        set.status = 403
+        return errorBody('unauthorized', 'This action is only available from the app itself.')
       }
     })
     .onError(({ error, code, set }) => {
