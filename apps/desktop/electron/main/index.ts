@@ -96,6 +96,8 @@ function createWindow(): void {
   })
   mainWindow = win
   lockNavigation(win, allowedOrigin)
+  // The renderer's mini-mode flag lives in memory; if the page reloads or crashes, leave mini mode so they can't disagree.
+  win.webContents.on('did-start-loading', () => { if (beforeMini) setMiniMode(win, false) })
   win.once('ready-to-show', () => { if (state.maximized) win.maximize(); win.show() })
   win.on('close', () => saveWindowState(win))
   win.on('closed', () => { mainWindow = null })
