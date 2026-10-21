@@ -85,6 +85,11 @@ export const MIGRATIONS: Migration[] = [
       );
     `,
   },
+  {
+    version: 2,
+    name: 'playlist_icons',
+    sql: `ALTER TABLE playlists ADD COLUMN icon TEXT NOT NULL DEFAULT 'list-music';`,
+  },
 ]
 
 export function openDatabase(path: string, migrations: Migration[] = MIGRATIONS): Database {
