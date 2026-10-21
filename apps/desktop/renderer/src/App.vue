@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, provide, ref } from 'vue'
 import { RouterView } from 'vue-router'
+import MiniPlayer from '@/components/MiniPlayer.vue'
 import NowPlaying from '@/components/NowPlaying.vue'
 import Onboarding from '@/components/Onboarding.vue'
 import PlayerBar from '@/components/PlayerBar.vue'
@@ -45,6 +46,7 @@ function onKey(e: KeyboardEvent): void {
   else if (mod && e.key === 'ArrowUp') { e.preventDefault(); player.setVolume(player.volume + 0.05) }
   else if (mod && e.key === 'ArrowDown') { e.preventDefault(); player.setVolume(player.volume - 0.05) }
   else if (!mod && !e.altKey && e.key.toLowerCase() === 'm') player.toggleMute()
+  else if (mod && e.shiftKey && e.key.toLowerCase() === 'm') { e.preventDefault(); ui.setMiniMode(!ui.miniMode) }
   else if (!mod && !e.altKey && e.key.toLowerCase() === 'q') ui.queueOpen = !ui.queueOpen
 }
 
@@ -61,7 +63,9 @@ onBeforeUnmount(() => { window.removeEventListener('keydown', onKey); media.remo
       <div class="font-display text-3xl font-bold tracking-tight">Mohhey<span class="text-brand">.</span></div>
     </div>
     <Onboarding v-else-if="!library.hasLibrary" />
-    <div v-else class="relative flex h-full overflow-hidden">
+    <template v-else>
+    <MiniPlayer v-if="ui.miniMode" class="h-full" />
+    <div v-show="!ui.miniMode" class="relative flex h-full overflow-hidden">
       <Sidebar />
       <div class="relative flex min-w-0 flex-1 flex-col">
         <TopBar />
@@ -77,6 +81,7 @@ onBeforeUnmount(() => { window.removeEventListener('keydown', onKey); media.remo
       </div>
       <Transition name="fade"><NowPlaying v-if="ui.nowPlayingOpen" /></Transition>
     </div>
+    </template>
     <PromptDialog />
     <Toasts />
   </TooltipProvider>
