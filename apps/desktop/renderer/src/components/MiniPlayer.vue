@@ -15,16 +15,16 @@ const btn = 'no-drag grid place-items-center rounded-full text-muted-foreground 
 </script>
 
 <template>
-  <div class="drag flex h-full items-center gap-3.5 bg-card px-3.5" role="region" aria-label="Mini player">
+  <div class="drag flex h-full items-center gap-3.5 bg-card px-3.5" role="region" :aria-label="t('Mini player')">
     <Cover :hash="player.current?.artworkHash" :seed="player.current?.album || player.current?.title" class="size-[92px] shrink-0 rounded-xl shadow-card" />
 
     <div class="flex min-w-0 flex-1 flex-col justify-between self-stretch py-2.5">
       <!-- leave room on the right for the native window buttons -->
-      <div class="min-w-0 pe-[calc(100vw-env(titlebar-area-x,0px)-env(titlebar-area-width,100vw))]">
+      <div class="min-w-0 pr-[calc(100vw-env(titlebar-area-x,0px)-env(titlebar-area-width,100vw))]">
         <div v-if="player.current" dir="auto" class="truncate text-[15px] font-medium leading-tight" :title="player.current.title">{{ player.current.title }}</div>
         <div v-else class="text-[14px] text-muted-foreground">{{ t('player.nothingPlaying') }}</div>
         <div v-if="player.errorMessage" class="truncate text-xs text-destructive" role="alert">{{ player.errorMessage }}</div>
-        <div v-else-if="player.current" dir="auto" class="truncate text-[13px] text-muted-foreground">{{ player.current.artist || 'Unknown artist' }}</div>
+        <div v-else-if="player.current" dir="auto" class="truncate text-[13px] text-muted-foreground">{{ player.current.artist || t('Unknown artist') }}</div>
       </div>
 
       <div class="space-y-0.5">
@@ -42,7 +42,7 @@ const btn = 'no-drag grid place-items-center rounded-full text-muted-foreground 
             :aria-label="player.current.favorite ? t('player.unfavorite') : t('player.favorite')" :aria-pressed="player.current.favorite" @click="player.toggleFavorite(player.current)"
           ><Heart class="size-4" :class="player.current.favorite && 'fill-current'" /></button>
           <span class="flex-1" />
-          <button :class="cn(btn, 'size-8')" aria-label="Back to full player" title="Back to full player" @click="ui.setMiniMode(false)"><Maximize2 class="size-4" /></button>
+          <button :class="cn(btn, 'size-8')" :aria-label="t('Back to full player')" :title="t('Back to full player')" data-action="mini-exit" @click="ui.setMiniMode(false)"><Maximize2 class="size-4" /></button>
         </div>
         <div class="no-drag"><SeekBar /></div>
       </div>
