@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted } from 'vue'
-import { ChevronDown, Heart } from 'lucide-vue-next'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { ChevronDown, Heart, Quote } from 'lucide-vue-next'
 import { artUrl } from '@/lib/api'
 import { hueFor } from '@/lib/format'
 import { t } from '@/lib/i18n'
@@ -8,12 +8,16 @@ import { cn } from '@/lib/utils'
 import { usePlayerStore } from '@/stores/player'
 import { useUiStore } from '@/stores/ui'
 import Cover from './Cover.vue'
+import LyricsPanel from './LyricsPanel.vue'
+import SleepMenu from './SleepMenu.vue'
+import SpeedMenu from './SpeedMenu.vue'
 import SeekBar from './SeekBar.vue'
 import TransportControls from './TransportControls.vue'
 import VolumeControl from './VolumeControl.vue'
 
 const player = usePlayerStore()
 const ui = useUiStore()
+const lyricsOpen = ref(false)
 const track = computed(() => player.current)
 const bg = computed(() => artUrl(track.value?.artworkHash))
 const hue = computed(() => hueFor(track.value?.album || track.value?.title || ''))
@@ -39,8 +43,9 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
 
       <div v-if="track" class="mx-auto flex min-h-0 w-full max-w-[520px] flex-1 flex-col items-center justify-center gap-[clamp(10px,2.4vh,24px)]">
         <!-- Always a true square: the size comes from the free height, never from the flex container (which used to squash it). -->
+        <LyricsPanel v-if="lyricsOpen" class="h-[clamp(140px,calc(100vh-390px),440px)] w-[clamp(240px,calc(100vh-390px),520px)] max-w-full shrink-0" />
         <Cover
-          :hash="track.artworkHash" :seed="track.album || track.title"
+          v-else :hash="track.artworkHash" :seed="track.album || track.title"
           class="size-[clamp(140px,calc(100vh-390px),440px)] shrink-0 rounded-[28px] shadow-[0_40px_80px_-24px_rgb(0_0_0/0.65)]"
         />
         <div class="flex w-full items-center gap-4">
@@ -56,7 +61,15 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
         </div>
         <div class="w-full"><SeekBar /></div>
         <TransportControls size="lg" />
-        <div class="[@media(max-height:640px)]:hidden"><VolumeControl /></div>
+        <div class="flex items-center gap-2">
+          <div class="[@media(max-height:640px)]:hidden"><VolumeControl /></div>
+          <SpeedMenu />
+          <SleepMenu />
+          <button
+            :class="cn('no-drag grid size-9 place-items-center rounded-full transition-colors hover:bg-white/10', lyricsOpen ? 'bg-white/12 text-white' : 'text-white/70 hover:text-white')"
+            :aria-label="t('Lyrics')" :aria-pressed="lyricsOpen" :title="t('Lyrics')" data-action="lyrics-toggle" @click="lyricsOpen = !lyricsOpen"
+          ><Quote class="size-[18px]" /></button>
+        </div>
       </div>
       <p v-else class="m-auto text-white/70">{{ t('player.nothingPlaying') }}</p>
     </div>
