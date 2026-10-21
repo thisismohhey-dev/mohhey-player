@@ -10,6 +10,7 @@ let toastId = 0
 export const useUiStore = defineStore('ui', () => {
   const queueOpen = ref(false)
   const nowPlayingOpen = ref(false)
+  const miniMode = ref(false)
   const theme = ref<ThemeSetting>('light')
   const toasts = ref<Toast[]>([])
   /** Incremented when a track changes elsewhere (e.g. favorite) so list views can patch their rows. */
@@ -24,6 +25,12 @@ export const useUiStore = defineStore('ui', () => {
 
   function bumpTracks(id: number, patch: Partial<Track>): void { trackPatch.value = { id, patch, n: ++patchN } }
 
+  function setMiniMode(on: boolean): void {
+    miniMode.value = on
+    if (on) { queueOpen.value = false; nowPlayingOpen.value = false }
+    window.mohhey.setMiniMode(on)
+  }
+
   function applyTheme(): void {
     const dark = theme.value === 'dark' || (theme.value === 'system' && matchMedia('(prefers-color-scheme: dark)').matches)
     document.documentElement.classList.toggle('dark', dark)
@@ -31,5 +38,5 @@ export const useUiStore = defineStore('ui', () => {
   }
   function setTheme(t: ThemeSetting): void { theme.value = t; applyTheme() }
 
-  return { queueOpen, nowPlayingOpen, theme, toasts, trackPatch, toast, bumpTracks, setTheme, applyTheme }
+  return { queueOpen, nowPlayingOpen, miniMode, setMiniMode, theme, toasts, trackPatch, toast, bumpTracks, setTheme, applyTheme }
 })
