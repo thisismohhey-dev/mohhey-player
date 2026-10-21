@@ -44,7 +44,7 @@ Always-on-top, stays above every other window so you can control playback withou
 (`Ctrl+Shift+M`, or the mini-player button next to the queue). While it is active the full player leaves the taskbar and
 lives in the **system tray** next to the clock: click the tray icon to bring it back, or right-click for previous / play / next.
 
-<img src="docs/screenshots/mini.png" alt="Mini player" width="440">
+<img src="docs/screenshots/mini.png" alt="Mini player" width="360"> <img src="docs/screenshots/fa-mini.png" alt="Mini player (Persian)" width="360">
 
 ### Small touches
 <table>
@@ -54,7 +54,7 @@ lives in the **system tray** next to the clock: click the tray icon to bring it 
   </tr>
 </table>
 
-<img src="docs/screenshots/app-icon.png" alt="App icon" width="96"> App icon source: `apps/desktop/resources/icon.svg` (regenerate PNG/ICO with `bun scripts/make-icons.mjs`).
+<img src="docs/screenshots/app-icon.png" alt="App icon" width="96"> The logo is the "M." mark; source `apps/desktop/resources/icon.svg` (regenerate PNG/ICO with `bun scripts/make-icons.mjs`).
 
 <sub>Screenshots use a small fictional library generated for the demo.</sub>
 
