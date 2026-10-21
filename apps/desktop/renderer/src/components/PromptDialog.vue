@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/lib/i18n'
 import { ref, watch } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -31,7 +32,7 @@ function submit(): void {
           <Input v-model="value" class="mt-2 h-10 rounded-xl" maxlength="80" autofocus />
         </label>
         <DialogFooter class="mt-6">
-          <Button type="button" variant="ghost" class="rounded-full" @click="finish(null)">Cancel</Button>
+          <Button type="button" variant="ghost" class="rounded-full" @click="finish(null)">{{ t('Cancel') }}</Button>
           <Button type="submit" class="rounded-full" :disabled="!value.trim()">{{ activePrompt?.confirmLabel }}</Button>
         </DialogFooter>
       </form>
