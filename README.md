@@ -24,8 +24,10 @@ Offline desktop music player. **Electron · Vue 3 · shadcn-vue + Tailwind · El
 </table>
 
 ### Liquid-glass player bar
-The player bar is frosted glass (backdrop blur + saturation, rim light) tinted with colours sampled from the current cover, over a
-soft brand-coloured gradient background. Works in light and dark.
+The player bar is Apple-style liquid glass: clear and lightly frosted (backdrop blur + saturation), with a bright specular rim and no
+colour of its own. It picks up whatever scrolls behind it, in both light and dark.
+
+<img src="docs/screenshots/glass-bar.png" alt="Glass player bar close-up">
 
 <table>
   <tr>
