@@ -1,9 +1,10 @@
-import { readFile } from 'node:fs/promises'
+import { createReadStream } from 'node:fs'
+import { readFile, stat } from 'node:fs/promises'
 import { extname, join, normalize, sep } from 'node:path'
-import { pathToFileURL } from 'node:url'
-import { net, protocol } from 'electron'
+import { Readable } from 'node:stream'
+import { protocol } from 'electron'
 import type { ApiHandle } from './api-process'
-import { parseMediaUrl } from './policy'
+import { audioMime, parseMediaUrl, parseRange } from './policy'
 
 export const APP_SCHEME = 'mohhey-app'
 export const MEDIA_SCHEME = 'mohhey-media'
@@ -40,7 +41,31 @@ export function handleAppProtocol(rendererDir: string): void {
 }
 
 /**
- * `mohhey-media://track/<id>` streams a local audio file (Range supported by Chromium's file handler);
+ * Serves a local audio file with explicit HTTP Range support. Chromium only treats a media resource as seekable
+ * when it receives `Accept-Ranges`/`Content-Length` and 206 responses; relying on `net.fetch(file://)` left some
+ * files unseekable (seeking snapped back to 0:00).
+ */
+async function serveAudioFile(path: string, rangeHeader: string | null): Promise<Response> {
+  let size: number
+  try { size = (await stat(path)).size } catch { return new Response('File not found', { status: 404 }) }
+  const base = { 'content-type': audioMime(extname(path)), 'accept-ranges': 'bytes', 'cache-control': 'no-store' }
+  if (size === 0) return new Response(null, { status: 200, headers: { ...base, 'content-length': '0' } })
+  const range = parseRange(rangeHeader, size)
+  if (range === 'unsatisfiable') return new Response(null, { status: 416, headers: { ...base, 'content-range': `bytes */${size}` } })
+  const { start, end } = range ?? { start: 0, end: size - 1 }
+  const body = Readable.toWeb(createReadStream(path, { start, end })) as ReadableStream
+  return new Response(body, {
+    status: range ? 206 : 200,
+    headers: {
+      ...base,
+      'content-length': String(end - start + 1),
+      ...(range ? { 'content-range': `bytes ${start}-${end}/${size}` } : {}),
+    },
+  })
+}
+
+/**
+ * `mohhey-media://track/<id>` streams a local audio file (Range requests honoured, see serveAudioFile);
  * `mohhey-media://art/<hash.ext>` serves cached artwork. The renderer never sees file paths.
  */
 export function handleMediaProtocol(api: ApiHandle): void {
@@ -53,10 +78,7 @@ export function handleMediaProtocol(api: ApiHandle): void {
         const res = await fetch(`${api.baseUrl}/internal/tracks/${target.key}/path`, { headers: auth })
         if (!res.ok) return new Response('Track not found', { status: 404 })
         const { path } = (await res.json()) as { path: string }
-        const headers = new Headers()
-        const range = request.headers.get('range')
-        if (range) headers.set('range', range)
-        return await net.fetch(pathToFileURL(path).toString(), { headers })
+        return await serveAudioFile(path, request.headers.get('range'))
       }
       return await fetch(`${api.baseUrl}/artwork/${target.key}`, { headers: auth })
     } catch {
