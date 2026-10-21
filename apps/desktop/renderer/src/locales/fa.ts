@@ -35,7 +35,7 @@ export const fa: { tree: Messages; literals: Record<string, string>; nouns: Reco
   },
   nouns: { song: 'آهنگ', album: 'آلبوم', artist: 'هنرمند', playlist: 'پلی‌لیست', image: 'تصویر', problem: 'مشکل' },
   literals: {
-    Quit: 'خروج', Close: 'بستن', Minimize: 'کوچک‌کردن', Maximize: 'بزرگ‌کردن', Restore: 'بازگرداندن', 'Window controls': 'دکمه‌های پنجره',
+    Playback: 'پخش', Shortcuts: 'میان‌برها', Quit: 'خروج', Close: 'بستن', Minimize: 'کوچک‌کردن', Maximize: 'بزرگ‌کردن', Restore: 'بازگرداندن', 'Window controls': 'دکمه‌های پنجره',
     'Expand sidebar': 'باز کردن نوار کناری', 'Collapse sidebar': 'جمع‌کردن نوار کناری', 'Collapse or expand the sidebar': 'جمع یا باز کردن نوار کناری',
     'Edit playlist': 'ویرایش پلی‌لیست', Icon: 'آیکون',
     Artist: 'هنرمند', Playlist: 'پلی‌لیست', Play: 'پخش', Shuffle: 'تصادفی', Cancel: 'انصراف', Save: 'ذخیره', Create: 'ساخت', Rename: 'تغییر نام', Delete: 'حذف',
