@@ -74,6 +74,7 @@ describe('DNS-rebinding and origin protection', () => {
   })
 
   test('internal-route matcher', () => {
+    expect(requiresInternal('POST', '/library/open-file')).toBe(true)
     expect(requiresInternal('GET', '/internal/tracks/1/path')).toBe(true)
     expect(requiresInternal('POST', '/library/folders')).toBe(true)
     expect(requiresInternal('GET', '/library/folders')).toBe(false)
@@ -112,6 +113,24 @@ describe('input hardening', () => {
     for (const bad of [dir, join(dir, 'music', '..'), 'C:\\Windows', '/etc', '\\\\evil\\share', join(dir, 'music') + '\\..\\..']) {
       const r = await send('/library/browse?path=' + encodeURIComponent(bad), { headers: asRenderer })
       expect([400, 404]).toContain(r.status)
+    }
+  })
+})
+
+describe('opening a single file', () => {
+  test('only the main process may open files; they stay out of the library lists', async () => {
+    const outside = join(dir, 'outside.mp3'); writeFileSync(outside, 'unique-bytes')
+    const body = JSON.stringify({ path: outside })
+    expect((await send('/library/open-file', { method: 'POST', headers: asRenderer, body })).status).toBe(403)
+    const ok = await send('/library/open-file', { method: 'POST', headers: asMain, body })
+    expect(ok.status).toBe(200)
+    const { id } = (await ok.json()) as { id: number }
+    expect(((await (await send('/tracks', { headers: asRenderer })).json()) as any).total).toBe(0) // not part of the library
+    expect((await send(`/tracks/${id}`, { headers: asRenderer })).status).toBe(200) // but playable by id
+    // not audio / not a file / relative
+    writeFileSync(join(dir, 'x.txt'), 'x')
+    for (const bad of [join(dir, 'x.txt'), dir, 'relative.mp3']) {
+      expect((await send('/library/open-file', { method: 'POST', headers: asMain, body: JSON.stringify({ path: bad }) })).status).toBe(400)
     }
   })
 })

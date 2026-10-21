@@ -1,10 +1,11 @@
 import { createHash } from 'node:crypto'
 import { existsSync, mkdirSync } from 'node:fs'
 import { open, readdir, stat, writeFile } from 'node:fs/promises'
-import { basename, extname, join } from 'node:path'
+import { basename, extname, isAbsolute, join, normalize, sep } from 'node:path'
 import { parseFile } from 'music-metadata'
 import type { ScanStatus } from '@mohhey/contracts'
 import type { Db } from '../../shared/db'
+import { markDuplicates } from './dedupe'
 import { cleanupOrphans, upsertAlbum, upsertArtist } from '../../shared/entities'
 import { normalizeText } from '../../shared/normalize'
 import { repairMojibake } from '../../shared/repair-text'
@@ -183,7 +184,7 @@ export class LibraryScanner {
   }
 
   /** Idempotent: unchanged files (same path, size, mtime) are skipped; moved files are re-linked by fingerprint. */
-  private async processFile(folderId: number, path: string, stale: Set<number>): Promise<number | null> {
+  private async processFile(folderId: number | null, path: string, stale: Set<number>): Promise<number | null> {
     const st = await stat(path)
     const existing = this.db.query<ExistingRow, [string]>('SELECT id, size, mtime_ms, missing, meta_locked FROM tracks WHERE path = ?').get(path)
     const mtime = Math.floor(st.mtimeMs)
@@ -253,6 +254,23 @@ export class LibraryScanner {
     })()
   }
 
+  /**
+   * Makes one audio file playable (used when the OS opens a file with the app). Files inside a library folder simply join that
+   * folder; any other file is stored hidden (dup_hidden = 2) so it never shows up in the library lists. Returns the track id.
+   */
+  async openFile(rawPath: string): Promise<number> {
+    const path = normalize(rawPath)
+    if (!isAbsolute(path) || !AUDIO_EXTENSIONS.has(extname(path).toLowerCase())) throw new Error('Not a supported audio file.')
+    const st = await stat(path)
+    if (!st.isFile()) throw new Error('Not a file.')
+    const folder = this.db.query<FolderRow, []>('SELECT id, path FROM folders').all()
+      .find((f) => path.toLowerCase().startsWith(f.path.replace(/[\\/]+$/, '').toLowerCase() + sep))
+    const id = await this.processFile(folder?.id ?? null, path, new Set())
+    if (id === null) throw new Error('Could not read this file.')
+    if (!folder) this.db.query('UPDATE tracks SET dup_hidden = 2 WHERE id = ? AND folder_id IS NULL').run(id)
+    return id
+  }
+
   /** A ReplayGain tag is authoritative; without one, any gain measured during playback is kept. */
   private applyReplayGain(id: number, gainDb: number | null): void {
     if (gainDb !== null) this.db.query('UPDATE tracks SET gain_db = ? WHERE id = ?').run(gainDb, id)
@@ -266,7 +284,7 @@ export class LibraryScanner {
     return `${hash}.${ext}`
   }
 
-  private cleanupOrphans(): void { cleanupOrphans(this.db) }
+  private cleanupOrphans(): void { cleanupOrphans(this.db); markDuplicates(this.db) }
 
   /** Removes orphaned albums/artists after a folder is removed. */
   cleanup(): void { this.cleanupOrphans() }

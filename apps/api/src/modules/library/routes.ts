@@ -11,7 +11,7 @@ export const libraryRoutes = (db: Db, scanner: LibraryScanner) => {
   const folders = (): LibraryFolder[] =>
     db.query<{ id: number; path: string; added_at: number; n: number }, []>(
       `SELECT f.id, f.path, f.added_at, COUNT(t.id) AS n FROM folders f
-       LEFT JOIN tracks t ON t.folder_id = f.id AND t.missing = 0 GROUP BY f.id ORDER BY f.added_at`,
+       LEFT JOIN tracks t ON t.folder_id = f.id AND t.missing = 0 AND t.dup_hidden = 0 GROUP BY f.id ORDER BY f.added_at`,
     ).all().map((r) => ({ id: r.id, path: r.path, addedAt: r.added_at, trackCount: r.n }))
 
   return new Elysia({ name: 'library', prefix: '/library' })
@@ -33,6 +33,10 @@ export const libraryRoutes = (db: Db, scanner: LibraryScanner) => {
       scanner.cleanup()
       return { items: folders() }
     }, { params: z.object({ id: z.coerce.number().int() }) })
+    // Called by the Electron main process only (see requiresInternal) with a path the operating system handed to the app.
+    .post('/open-file', async ({ body }) => {
+      try { return { id: await scanner.openFile(body.path) } } catch (e) { throw badRequest(e instanceof Error ? e.message : 'Could not open this file.') }
+    }, { body: z.object({ path: z.string().min(1).max(4096) }) })
     .post('/scan', () => { void scanner.start(); return scanner.getStatus() })
     .get('/scan', () => scanner.getStatus())
 }
