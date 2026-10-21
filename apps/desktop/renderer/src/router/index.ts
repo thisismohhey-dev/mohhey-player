@@ -16,6 +16,7 @@ export const router = createRouter({
     { path: '/playlists', name: 'playlists', component: () => import('@/pages/PlaylistsPage.vue') },
     { path: '/playlists/:id(\\d+)', name: 'playlist', component: () => import('@/pages/PlaylistPage.vue'), props: true },
     { path: '/search', name: 'search', component: () => import('@/pages/SearchPage.vue') },
+    { path: '/duplicates', name: 'duplicates', component: () => import('@/pages/DuplicatesPage.vue') },
     { path: '/settings', name: 'settings', component: () => import('@/pages/SettingsPage.vue') },
     { path: '/:pathMatch(.*)*', redirect: { name: 'home' } },
   ],
