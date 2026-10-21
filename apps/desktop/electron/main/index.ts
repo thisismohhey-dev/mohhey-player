@@ -1,10 +1,12 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { app, BrowserWindow, dialog, ipcMain, screen } from 'electron'
+import type { TrayCommand, TrayLabels, WindowControl } from '@mohhey/contracts'
 import { startApi, type ApiHandle } from './api-process'
 import { originOf } from './policy'
 import { APP_ORIGIN, handleAppProtocol, handleMediaProtocol, registerSchemes } from './protocols'
 import { applySecurity, isTrustedSender, lockNavigation } from './security'
+import { destroyTray, resourcePath, sanitizeLabels, showTray } from './tray'
 
 const isDev = !app.isPackaged && !!process.env.ELECTRON_RENDERER_URL
 const rendererUrl = isDev ? process.env.ELECTRON_RENDERER_URL! : `${APP_ORIGIN}/index.html`
@@ -38,13 +40,30 @@ function loadWindowState(): WindowState {
   } catch { return fallback }
 }
 
-/** Mini-player mode: small, frameless-ish, always above every other window. */
+/** Mini-player mode: a small always-on-top window. The app leaves the taskbar and lives in the tray while it is active. */
 const MINI_SIZE = { width: 440, height: 120 }
+const DEFAULT_TRAY_LABELS: TrayLabels = { show: 'Show Mohhey', playPause: 'Play / Pause', next: 'Next', previous: 'Previous', quit: 'Quit', tooltip: 'Mohhey Player' }
 let beforeMini: { bounds: Electron.Rectangle; maximized: boolean } | null = null
 
-function setMiniMode(win: BrowserWindow, on: boolean): void {
+const WINDOW_CONTROLS: readonly WindowControl[] = ['minimize', 'maximize', 'close']
+
+function leaveMiniFromTray(): void {
+  if (!mainWindow) return
+  setMiniMode(mainWindow, false)
+  mainWindow.webContents.send('window:mini', false)
+  mainWindow.show()
+  mainWindow.focus()
+}
+
+function setMiniMode(win: BrowserWindow, on: boolean, labels?: TrayLabels | null): void {
   if (on === (beforeMini !== null)) return
   if (on) {
+    showTray(labels ?? DEFAULT_TRAY_LABELS, {
+      restore: leaveMiniFromTray,
+      command: (cmd: TrayCommand) => win.webContents.send('tray:command', cmd),
+      quit: () => app.quit(),
+    })
+    win.setSkipTaskbar(true)
     beforeMini = { bounds: win.getNormalBounds(), maximized: win.isMaximized() }
     if (beforeMini.maximized) win.unmaximize()
     const area = screen.getDisplayMatching(beforeMini.bounds).workArea
@@ -58,6 +77,8 @@ function setMiniMode(win: BrowserWindow, on: boolean): void {
   } else {
     const prev = beforeMini!
     beforeMini = null
+    destroyTray()
+    win.setSkipTaskbar(false)
     win.setAlwaysOnTop(false)
     win.setVisibleOnAllWorkspaces(false)
     win.setResizable(true)
@@ -82,9 +103,9 @@ function createWindow(): void {
     minHeight: 600,
     show: false,
     backgroundColor: '#f4f2ee',
-    // Native caption buttons on Windows/Linux, traffic lights on macOS; our UI draws the rest of the title bar.
+    icon: resourcePath(process.platform === 'win32' ? 'icon.ico' : 'icon.png'),
+    // Frameless: macOS keeps its traffic lights; on Windows/Linux the renderer draws its own window buttons.
     titleBarStyle: 'hidden',
-    titleBarOverlay: { color: '#00000000', symbolColor: '#1b1a18', height: 44 },
     webPreferences: {
       preload: join(__dirname, '../preload/index.cjs'),
       contextIsolation: true,
@@ -98,6 +119,9 @@ function createWindow(): void {
   lockNavigation(win, allowedOrigin)
   // The renderer's mini-mode flag lives in memory; if the page reloads or crashes, leave mini mode so they can't disagree.
   win.webContents.on('did-start-loading', () => { if (beforeMini) setMiniMode(win, false) })
+  win.on('maximize', () => win.webContents.send('window:maximized', true))
+  win.on('unmaximize', () => win.webContents.send('window:maximized', false))
+  win.webContents.on('did-finish-load', () => win.webContents.send('window:maximized', win.isMaximized()))
   win.once('ready-to-show', () => { if (state.maximized) win.maximize(); win.show() })
   win.on('close', () => saveWindowState(win))
   win.on('closed', () => { mainWindow = null })
@@ -105,14 +129,15 @@ function createWindow(): void {
 }
 
 function registerIpc(): void {
-  ipcMain.on('window:set-mini', (e, on: unknown) => {
+  ipcMain.on('window:set-mini', (e, on: unknown, labels: unknown) => {
     if (!isTrustedSender(e, allowedOrigin) || typeof on !== 'boolean' || !mainWindow) return
-    setMiniMode(mainWindow, on)
+    setMiniMode(mainWindow, on, sanitizeLabels(labels))
   })
-  ipcMain.on('window:set-theme', (e, dark: unknown) => {
-    if (!isTrustedSender(e, allowedOrigin) || typeof dark !== 'boolean') return
-    // Only Windows/Linux draw native caption buttons through titleBarOverlay.
-    if (process.platform !== 'darwin') mainWindow?.setTitleBarOverlay({ color: '#00000000', symbolColor: dark ? '#f3f1ec' : '#1b1a18', height: 44 })
+  ipcMain.on('window:control', (e, action: unknown) => {
+    if (!isTrustedSender(e, allowedOrigin) || !mainWindow || !WINDOW_CONTROLS.includes(action as WindowControl)) return
+    if (action === 'minimize') mainWindow.minimize()
+    else if (action === 'maximize') { if (mainWindow.isMaximized()) mainWindow.unmaximize(); else mainWindow.maximize() }
+    else mainWindow.close()
   })
   ipcMain.handle('api:get-config', (e) => {
     if (!isTrustedSender(e, allowedOrigin) || !api) throw new Error('Not available')
@@ -148,5 +173,5 @@ app.whenReady().then(async () => {
   app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow() })
 })
 
-app.on('before-quit', () => { api?.stop() })
+app.on('before-quit', () => { destroyTray(); api?.stop() })
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit() })
