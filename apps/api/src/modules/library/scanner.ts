@@ -1,11 +1,13 @@
 import { createHash } from 'node:crypto'
 import { existsSync, mkdirSync } from 'node:fs'
-import { readdir, stat, writeFile } from 'node:fs/promises'
+import { open, readdir, stat, writeFile } from 'node:fs/promises'
 import { basename, extname, join } from 'node:path'
 import { parseFile } from 'music-metadata'
 import type { ScanStatus } from '@mohhey/contracts'
 import type { Db } from '../../shared/db'
+import { cleanupOrphans, upsertAlbum, upsertArtist } from '../../shared/entities'
 import { normalizeText } from '../../shared/normalize'
+import { repairMojibake } from '../../shared/repair-text'
 
 /** Extensions Chromium (Electron) can decode. Verified list; extend only after testing playback. */
 export const AUDIO_EXTENSIONS = new Set(['.mp3', '.flac', '.ogg', '.oga', '.opus', '.wav', '.m4a', '.aac', '.weba'])
@@ -17,13 +19,15 @@ const emptyStatus = (): ScanStatus => ({
   currentFile: null, errors: [], startedAt: null, finishedAt: null,
 })
 
-interface ExistingRow { id: number; size: number; mtime_ms: number; missing: number }
+interface ExistingRow { id: number; size: number; mtime_ms: number; missing: number; meta_locked: number }
 interface FolderRow { id: number; path: string }
 
 export interface ParsedTrack {
   title: string; artist: string; album: string; albumArtist: string; trackNo: number | null; discNo: number | null
   year: number | null; durationMs: number; format: string; bitrate: number | null
   picture: { data: Uint8Array; format: string } | null
+  /** ReplayGain track gain from the file's tags, if present. */
+  replayGainDb: number | null
 }
 
 export type MetadataReader = (path: string) => Promise<ParsedTrack>
@@ -34,11 +38,12 @@ export const readMetadata: MetadataReader = async (path) => {
   // parseFile is lenient: junk bytes with an audio extension parse as an empty file. Treat that as unreadable.
   if (!format.codec && !format.container) throw new Error('Not a recognised audio file.')
   const picture = common.picture?.[0]
+  const text = (v: string | undefined) => repairMojibake(v?.trim() ?? '')
   return {
-    title: common.title?.trim() || '',
-    artist: common.artist?.trim() || common.albumartist?.trim() || '',
-    album: common.album?.trim() || '',
-    albumArtist: common.albumartist?.trim() || common.artist?.trim() || '',
+    title: text(common.title),
+    artist: text(common.artist) || text(common.albumartist),
+    album: text(common.album),
+    albumArtist: text(common.albumartist) || text(common.artist),
     trackNo: common.track.no ?? null,
     discNo: common.disk.no ?? null,
     year: common.year ?? null,
@@ -46,7 +51,27 @@ export const readMetadata: MetadataReader = async (path) => {
     format: (format.codec ?? format.container ?? extname(path).slice(1)).toString().toLowerCase(),
     bitrate: format.bitrate ? Math.round(format.bitrate / 1000) : null,
     picture: picture ? { data: picture.data, format: picture.format } : null,
+    replayGainDb: common.replaygain_track_gain?.dB ?? null,
   }
+}
+
+const HASH_CHUNK = 64 * 1024
+
+/** Cheap content fingerprint: size + first and last 64 KB. Equal hashes mean (practically) identical files. */
+async function contentHash(path: string, size: number): Promise<string> {
+  const h = createHash('sha1').update(String(size))
+  const fh = await open(path, 'r')
+  try {
+    const head = Buffer.alloc(Math.min(HASH_CHUNK, size))
+    await fh.read(head, 0, head.length, 0)
+    h.update(head)
+    if (size > HASH_CHUNK) {
+      const tail = Buffer.alloc(Math.min(HASH_CHUNK, size - HASH_CHUNK))
+      await fh.read(tail, 0, tail.length, size - tail.length)
+      h.update(tail)
+    }
+  } finally { await fh.close() }
+  return h.digest('hex')
 }
 
 async function* walk(dir: string, onError: (path: string, err: unknown) => void): AsyncGenerator<string> {
@@ -160,7 +185,7 @@ export class LibraryScanner {
   /** Idempotent: unchanged files (same path, size, mtime) are skipped; moved files are re-linked by fingerprint. */
   private async processFile(folderId: number, path: string, stale: Set<number>): Promise<number | null> {
     const st = await stat(path)
-    const existing = this.db.query<ExistingRow, [string]>('SELECT id, size, mtime_ms, missing FROM tracks WHERE path = ?').get(path)
+    const existing = this.db.query<ExistingRow, [string]>('SELECT id, size, mtime_ms, missing, meta_locked FROM tracks WHERE path = ?').get(path)
     const mtime = Math.floor(st.mtimeMs)
     if (existing && existing.size === st.size && existing.mtime_ms === mtime && existing.missing === 0) return existing.id
 
@@ -168,25 +193,38 @@ export class LibraryScanner {
     const fileName = basename(path)
     const title = meta.title || basename(path, extname(path))
     const artworkHash = meta.picture ? await this.saveArtwork(meta.picture) : null
+    const hash = await contentHash(path, st.size)
     const fingerprint = createHash('sha1')
       .update(`${normalizeText(title)}|${normalizeText(meta.artist)}|${normalizeText(meta.album)}|${Math.round(meta.durationMs / 1000)}`)
       .digest('hex')
 
     return this.db.transaction(() => {
-      const artistId = meta.artist ? this.upsertArtist(meta.artist) : null
-      const albumArtistId = meta.albumArtist ? this.upsertArtist(meta.albumArtist) : null
-      const albumId = meta.album ? this.upsertAlbum(meta.album, albumArtistId, meta.albumArtist, meta.year) : null
+      const artistId = meta.artist ? upsertArtist(this.db, meta.artist) : null
+      const albumArtistId = meta.albumArtist ? upsertArtist(this.db, meta.albumArtist) : null
+      const albumId = meta.album ? upsertAlbum(this.db, meta.album, albumArtistId, meta.albumArtist, meta.year) : null
       const searchText = normalizeText(`${title} ${meta.artist} ${meta.album} ${fileName}`)
       const values = [
         folderId, fileName, title, artistId, albumId, meta.trackNo, meta.discNo, meta.year, meta.durationMs, meta.format,
         meta.bitrate, st.size, mtime, artworkHash, fingerprint, searchText,
       ] as const
 
+      if (existing?.meta_locked === 1) {
+        // Edited inside Mohhey: refresh technical fields only, never overwrite the user's title/artist/album.
+        this.db.query(
+          `UPDATE tracks SET folder_id=?, file_name=?, track_no=?, disc_no=?, year=?, duration_ms=?, format=?, bitrate=?, size=?, mtime_ms=?,
+           artwork_hash=?, content_hash=?, missing=0 WHERE id=?`,
+        ).run(folderId, fileName, meta.trackNo, meta.discNo, meta.year, meta.durationMs, meta.format, meta.bitrate, st.size, mtime, artworkHash, hash, existing.id)
+        this.applyReplayGain(existing.id, meta.replayGainDb)
+        this.status.updated++
+        return existing.id
+      }
+
       if (existing) {
         this.db.query(
           `UPDATE tracks SET folder_id=?, file_name=?, title=?, artist_id=?, album_id=?, track_no=?, disc_no=?, year=?, duration_ms=?,
-           format=?, bitrate=?, size=?, mtime_ms=?, artwork_hash=?, fingerprint=?, search_text=?, missing=0 WHERE id=?`,
-        ).run(...values, existing.id)
+           format=?, bitrate=?, size=?, mtime_ms=?, artwork_hash=?, fingerprint=?, search_text=?, content_hash=?, missing=0 WHERE id=?`,
+        ).run(...values, hash, existing.id)
+        this.applyReplayGain(existing.id, meta.replayGainDb)
         this.status.updated++
         return existing.id
       }
@@ -198,34 +236,26 @@ export class LibraryScanner {
         stale.delete(moved.id)
         this.db.query(
           `UPDATE tracks SET path=?, folder_id=?, file_name=?, title=?, artist_id=?, album_id=?, track_no=?, disc_no=?, year=?, duration_ms=?,
-           format=?, bitrate=?, size=?, mtime_ms=?, artwork_hash=?, fingerprint=?, search_text=?, missing=0 WHERE id=?`,
-        ).run(path, ...values, moved.id)
+           format=?, bitrate=?, size=?, mtime_ms=?, artwork_hash=?, fingerprint=?, search_text=?, content_hash=?, missing=0 WHERE id=?`,
+        ).run(path, ...values, hash, moved.id)
+        this.applyReplayGain(moved.id, meta.replayGainDb)
         this.status.updated++
         return moved.id
       }
 
       const res = this.db.query(
         `INSERT INTO tracks (path, folder_id, file_name, title, artist_id, album_id, track_no, disc_no, year, duration_ms, format, bitrate,
-          size, mtime_ms, artwork_hash, fingerprint, search_text, added_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      ).run(path, ...values, Date.now())
+          size, mtime_ms, artwork_hash, fingerprint, search_text, content_hash, added_at, gain_db)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      ).run(path, ...values, hash, Date.now(), meta.replayGainDb)
       this.status.added++
       return Number(res.lastInsertRowid)
     })()
   }
 
-  private upsertArtist(name: string): number {
-    const norm = normalizeText(name) || name.toLowerCase()
-    this.db.query('INSERT OR IGNORE INTO artists (name, name_norm) VALUES (?, ?)').run(name, norm)
-    return this.db.query<{ id: number }, [string]>('SELECT id FROM artists WHERE name_norm = ?').get(norm)!.id
-  }
-
-  private upsertAlbum(title: string, artistId: number | null, artistName: string, year: number | null): number {
-    const norm = normalizeText(title) || title.toLowerCase()
-    const key = normalizeText(artistName)
-    this.db.query('INSERT OR IGNORE INTO albums (title, title_norm, artist_id, artist_key, year) VALUES (?, ?, ?, ?, ?)')
-      .run(title, norm, artistId, key, year)
-    return this.db.query<{ id: number }, [string, string]>('SELECT id FROM albums WHERE title_norm = ? AND artist_key = ?').get(norm, key)!.id
+  /** A ReplayGain tag is authoritative; without one, any gain measured during playback is kept. */
+  private applyReplayGain(id: number, gainDb: number | null): void {
+    if (gainDb !== null) this.db.query('UPDATE tracks SET gain_db = ? WHERE id = ?').run(gainDb, id)
   }
 
   private async saveArtwork(pic: { data: Uint8Array; format: string }): Promise<string> {
@@ -236,13 +266,7 @@ export class LibraryScanner {
     return `${hash}.${ext}`
   }
 
-  private cleanupOrphans(): void {
-    this.db.exec(`
-      DELETE FROM albums WHERE id NOT IN (SELECT DISTINCT album_id FROM tracks WHERE album_id IS NOT NULL);
-      DELETE FROM artists WHERE id NOT IN (SELECT DISTINCT artist_id FROM tracks WHERE artist_id IS NOT NULL)
-        AND id NOT IN (SELECT DISTINCT artist_id FROM albums WHERE artist_id IS NOT NULL);
-    `)
-  }
+  private cleanupOrphans(): void { cleanupOrphans(this.db) }
 
   /** Removes orphaned albums/artists after a folder is removed. */
   cleanup(): void { this.cleanupOrphans() }
